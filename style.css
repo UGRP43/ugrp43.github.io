@@ -204,3 +204,123 @@ footer b { font-weight: 500; }
 @media (max-width: 640px) {
   .langbar { justify-content: center; padding-top: 12px; }
 }
+
+/* ---------- 모바일(QR 접속) 가독성 ---------- */
+/* 가로로 밀리는 영역에 "옆에 더 있다"는 그림자. 끝까지 밀면 사라진다 */
+.tw, .chart { --fadec: #fff; }
+.eq { --fadec: #f3f6fa; }
+
+@media (max-width: 640px) {
+  /* 머리글 nowrap 해제 — 이것만으로도 표 대부분이 화면 폭 안에 들어온다.
+     단 body 의 overflow-wrap: anywhere 가 "Episodes" 를 "Episod/es" 로 쪼개므로
+     머리글과 숫자 칸은 단어 중간에서 끊기지 않게 되돌린다 */
+  th, th.n { white-space: normal; }
+  th, td.n { overflow-wrap: normal; word-break: keep-all; }
+  /* 문장이 들어간 칸만 줄바꿈을 허용한다. 글꼴·정렬·크기는 원본 그대로 두고
+     white-space 하나만 푼다 — 데스크톱에서는 nowrap 이 그대로라 원본과 동일하다 */
+  td.n.wrap { white-space: normal; }
+  /* 문장이 들어간 칸만 본문처럼. 숫자 칸은 위의 wrap 처럼 오른쪽·고정폭을 유지한다 */
+  td.n.txt { white-space: normal; text-align: left; font-family: var(--sans); font-size: .86rem; }
+  /* arXiv 번호가 "2502.1259/9" 로 갈라지지 않게 */
+  .mono { overflow-wrap: normal; word-break: keep-all; }
+  /* 숫자 칸은 nowrap 을 유지한다. 풀면 "3.7e-9" 가 하이픈에서 "3.7e-/9" 로 갈라진다 */
+  table { font-size: .9rem; }
+  th, th.n { font-size: .82rem; }
+  th, td { padding: 10px 9px; }
+  caption { padding: 12px 11px; }
+
+  /* 그래도 밀어야 하는 표는 첫 열을 고정해 어느 행인지 놓치지 않게 한다.
+     sticky 가 border-collapse: collapse 에서 동작하지 않는 브라우저가 있어 separate 로 둔다 */
+  .tw table { border-collapse: separate; border-spacing: 0; }
+  .tw th:first-child, .tw td:first-child {
+    position: sticky; left: 0; z-index: 2;
+    background: #fff; border-right: 1px solid var(--line);
+    /* 고정된 라벨이 "HA/ML/ET" 처럼 쪼개지지 않을 만큼의 최소 폭.
+       keep-all 로 막으면 긴 식별자(freeze_vision_encoder) 때문에 열이 넓어져
+       다른 표까지 가로로 밀리므로, 최소 폭만 주고 끊기 자체는 허용한다 */
+    min-width: 56px;
+  }
+  .tw thead th:first-child { background: #eef3f9; }
+
+  .tw, .eq, .chart {
+    background-image:
+      linear-gradient(to right, var(--fadec) 40%, transparent),
+      linear-gradient(to left,  var(--fadec) 40%, transparent),
+      radial-gradient(farthest-side at 0 50%, #20273226, transparent),
+      radial-gradient(farthest-side at 100% 50%, #20273226, transparent);
+    background-position: left center, right center, left center, right center;
+    background-size: 26px 100%, 26px 100%, 13px 100%, 13px 100%;
+    background-repeat: no-repeat;
+    background-attachment: local, local, scroll, scroll;
+  }
+
+
+  /* ── 읽는 표는 폰에서 표를 그만두고 행 하나를 카드로 세운다 ──
+     비교하는 표(4조건 종합·통계 검정 등)는 표로 남긴다. 세로로 쌓으면 조건 간 대조가 안 된다 */
+  .tw.cards { border: 0; background: none; background-image: none; overflow: visible; margin: 16px 0; }
+  .tw.cards table, .tw.cards tbody, .tw.cards tr { display: block; }
+  .tw.cards thead { display: none; }
+  .tw.cards tr {
+    background: #fff; border: 1px solid var(--line); border-radius: 9px;
+    padding: 13px 15px; margin-bottom: 10px;
+  }
+  .tw.cards tr:last-of-type { margin-bottom: 0; }
+  /* grid/flex 를 쓰면 칸 안의 <b> 강조가 별도 줄로 떨어져 나간다.
+     이름표를 값 위에 블록으로 얹어 문장을 그대로 흐르게 둔다 */
+  .tw.cards td {
+    display: block; padding: 7px 0 0; border: 0; text-align: left;
+    white-space: normal; font-size: .92rem; line-height: 1.7;
+  }
+  .tw.cards td::before {
+    content: attr(data-label); display: block;
+    color: var(--ink3); font-size: .78rem; line-height: 1.6; font-family: var(--sans);
+    letter-spacing: .01em;
+  }
+  /* 첫 칸은 이름표가 아니라 카드 제목이다 */
+  .tw.cards td:first-child {
+    display: block; position: static; min-width: 0;
+    font-weight: 600; color: var(--ink); font-size: 1rem;
+    padding: 0 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line);
+  }
+  .tw.cards td:first-child::before { content: none; }
+  /* 머리글이 없는 2열 표(과제 사양)는 값만 한 줄로 */
+  .tw.cards td:not([data-label]) { display: block; }
+  .tw.cards td:not([data-label])::before { content: none; }
+  .tw.cards caption { display: block; border: 0; padding: 10px 2px 0; }
+
+  .eq { font-size: .8rem; line-height: 1.75; padding: 14px 15px; }
+  .chart { padding-left: 12px; padding-right: 12px; }
+  .langbar a { min-height: 44px; padding: 4px 18px; }
+  .resource-links a { flex: 1 1 auto; }
+}
+
+/* 폰 폭. 6열짜리 결과표까지 가로 스크롤 없이 들어가도록 더 조인다 */
+@media (max-width: 480px) {
+  th, td { padding: 9px 5px; }
+  /* 라벨이 "HAMLE/T" 로 갈라지지 않을 만큼만 줄인다 */
+  .tw td:first-child { font-size: .82rem; }
+  th, th.n { font-size: .78rem; }
+  td.n { font-size: .82rem; }
+  caption { padding: 11px 8px; font-size: .84rem; }
+}
+
+/* ---------- 태블릿 (641–1024px) ----------
+   폰의 카드형도, PC의 넓은 여백도 맞지 않는 구간이다.
+   표는 표로 두되 좌우 여백을 줄여 본문 폭을 확보한다 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .page { width: calc(100% - 48px); }
+  .project-header { padding-top: 52px; }
+  .paper-section { padding: 30px 34px 34px; margin: 30px 0; }
+  .section-heading h2 { font-size: 1.85rem; }
+  .paper-section > p { font-size: 1.05rem; line-height: 1.85; }
+  .dbody { padding: 20px; }
+  .tldr { padding: 18px 22px; }
+  .tldr p { font-size: 1.08rem; }
+  /* 잉크 계산식 한 줄이 19px 삐져나온다. 분철이 안 되는 수식이라 글자를 줄여 맞춘다 */
+  .eq { font-size: .86rem; }
+}
+/* 전후 비교 이미지는 나란히 놓아야 대조가 된다.
+   800px 이하 규칙이 한 열로 내리는 것을 태블릿 폭에서 되돌린다 */
+@media (min-width: 700px) and (max-width: 1024px) {
+  .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}

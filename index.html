@@ -52,7 +52,7 @@
   </div>
 
   <details><summary>과제 사양과 요구 능력</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="데이터 표"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="데이터 표"><table>
       <tr><td class="k">공식 과제명</td><td>로봇 파운데이션 모델 기반 데이터 효율적 작업 적응 기술 연구</td></tr>
       <tr><td class="k">최종 검증 Task</td><td>보드에 쓰인 여러 글자 중 지시된 글자만 골라 지우기</td></tr>
       <tr><td class="k">이번 단계</td><td>단일 도형 지우기로 파이프라인·평가 체계 구축 및 baseline 확보</td></tr>
@@ -99,15 +99,15 @@
       bounding box에 <b>k-means</b>를 적용해 좌·중·우로 나눴습니다. 결과가 6구역이고
       상단:하단이 균등하게 분할됩니다. 132에는 가운데 열 시연이 없습니다.</p>
     <h4>우리가 정한 것과 기본값을 쓴 것</h4>
-    <div class="tw" tabindex="0" role="region" aria-label="데이터 표"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="데이터 표"><table>
       <thead><tr><th>설정</th><th class="n">값</th><th>출처</th></tr></thead>
-      <tr><td class="k">Base model</td><td class="n">smolvla_base</td><td>프로젝트 결정</td></tr>
-      <tr><td class="k">Batch size</td><td class="n">8</td><td>프로젝트 결정 — smoke test로 검증</td></tr>
-      <tr><td class="k">Mixed precision</td><td class="n">BF16</td><td>프로젝트 결정</td></tr>
-      <tr><td class="k">chunk_size</td><td class="n">50</td><td>preset 유지</td></tr>
-      <tr><td class="k">freeze_vision_encoder</td><td class="n">true</td><td>preset 유지 — 최적이라 검증한 것 아님</td></tr>
-      <tr><td class="k">Learning rate</td><td class="n">1e-4</td><td>preset 유지 — LR search 안 함</td></tr>
-      <tr><td class="k">Image augmentation</td><td class="n">비활성</td><td>기본값 유지</td></tr>
+      <tr><td class="k">Base model</td><td class="n" data-label="값">smolvla_base</td><td data-label="출처">프로젝트 결정</td></tr>
+      <tr><td class="k">Batch size</td><td class="n" data-label="값">8</td><td data-label="출처">프로젝트 결정 — smoke test로 검증</td></tr>
+      <tr><td class="k">Mixed precision</td><td class="n" data-label="값">BF16</td><td data-label="출처">프로젝트 결정</td></tr>
+      <tr><td class="k">chunk_size</td><td class="n" data-label="값">50</td><td data-label="출처">preset 유지</td></tr>
+      <tr><td class="k">freeze_vision_encoder</td><td class="n" data-label="값">true</td><td data-label="출처">preset 유지 — 최적이라 검증한 것 아님</td></tr>
+      <tr><td class="k">Learning rate</td><td class="n" data-label="값">1e-4</td><td data-label="출처">preset 유지 — LR search 안 함</td></tr>
+      <tr><td class="k">Image augmentation</td><td class="n" data-label="값">비활성</td><td data-label="출처">기본값 유지</td></tr>
     </table></div>
     <div class="warn"><b>이 비교의 한계.</b>
       epoch는 맞췄지만 데이터 규모와 학습 스텝이 함께 늘어난 것은 사실이라,
@@ -125,16 +125,16 @@
         조작 실패와 판단 실패를 분리</li>
     </ul>
     <h4>종료 판정 — 사람이 아니라 규칙이 정한다</h4>
-    <div class="tw" tabindex="0" role="region" aria-label="데이터 표"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="데이터 표"><table>
       <thead><tr><th>판정</th><th>조건</th><th>근거</th></tr></thead>
-      <tr><td class="k">파지 성립</td><td class="n">지령 8~35가 15프레임 유지 · 폭 ≤ 3</td>
-        <td>접근 램프가 같은 대역을 통과함. 폭 조건이 없으면 오검출</td></tr>
-      <tr><td class="k">놓기 발생</td><td class="n">파지 대비 +15 이상 · 5프레임 연속</td>
-        <td>한 스텝 튐으로 실물 시도를 끊으면 되돌릴 수 없음</td></tr>
-      <tr><td class="k">유효 인정</td><td class="n">놓기 전 파지 120프레임 이상</td>
-        <td>미만은 헛손질로 보고 재파지 대기</td></tr>
-      <tr><td class="k">타임아웃</td><td class="n">2,100스텝 (70초)</td>
-        <td>시연 중앙값 720프레임의 약 2.9배</td></tr>
+      <tr><td class="k">파지 성립</td><td class="n txt" data-label="조건">지령 8~35가 15프레임 유지 · 폭 ≤ 3</td>
+        <td data-label="근거">접근 램프가 같은 대역을 통과함. 폭 조건이 없으면 오검출</td></tr>
+      <tr><td class="k">놓기 발생</td><td class="n txt" data-label="조건">파지 대비 +15 이상 · 5프레임 연속</td>
+        <td data-label="근거">한 스텝 튐으로 실물 시도를 끊으면 되돌릴 수 없음</td></tr>
+      <tr><td class="k">유효 인정</td><td class="n txt" data-label="조건">놓기 전 파지 120프레임 이상</td>
+        <td data-label="근거">미만은 헛손질로 보고 재파지 대기</td></tr>
+      <tr><td class="k">타임아웃</td><td class="n txt" data-label="조건">2,100스텝 (70초)</td>
+        <td data-label="근거">시연 중앙값 720프레임의 약 2.9배</td></tr>
     </table></div>
     <div class="warn"><b>이 설계 자체가 결과의 전제입니다.</b>
       종료 조건은 정책이 그리퍼를 여는 행동을 관측하면 그것을 끝으로 해석합니다.
@@ -218,16 +218,16 @@
   </div></details>
 
   <details><summary>학습 설정 — 정한 것과 기본값을 쓴 것</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="데이터 표"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="데이터 표"><table>
       <thead><tr><th>설정</th><th class="n">값</th><th>출처</th></tr></thead>
-      <tr><td class="k">Base model</td><td class="n">smolvla_base</td><td>프로젝트 결정</td></tr>
-      <tr><td class="k">Batch size</td><td class="n">8</td><td>프로젝트 결정 — smoke test로 검증</td></tr>
-      <tr><td class="k">Mixed precision</td><td class="n">BF16</td><td>프로젝트 결정</td></tr>
-      <tr><td class="k">Epoch</td><td class="n">8.0</td><td>프로젝트 결정 — 두 조건 동일</td></tr>
-      <tr><td class="k">chunk_size</td><td class="n">50</td><td>preset 유지</td></tr>
-      <tr><td class="k">freeze_vision_encoder</td><td class="n">true</td><td>preset 유지 — 최적이라 검증한 것 아님</td></tr>
-      <tr><td class="k">Learning rate</td><td class="n">1e-4</td><td>preset 유지 — LR search 안 함</td></tr>
-      <tr><td class="k">Image augmentation</td><td class="n">비활성</td><td>기본값 유지</td></tr>
+      <tr><td class="k">Base model</td><td class="n" data-label="값">smolvla_base</td><td data-label="출처">프로젝트 결정</td></tr>
+      <tr><td class="k">Batch size</td><td class="n" data-label="값">8</td><td data-label="출처">프로젝트 결정 — smoke test로 검증</td></tr>
+      <tr><td class="k">Mixed precision</td><td class="n" data-label="값">BF16</td><td data-label="출처">프로젝트 결정</td></tr>
+      <tr><td class="k">Epoch</td><td class="n" data-label="값">8.0</td><td data-label="출처">프로젝트 결정 — 두 조건 동일</td></tr>
+      <tr><td class="k">chunk_size</td><td class="n" data-label="값">50</td><td data-label="출처">preset 유지</td></tr>
+      <tr><td class="k">freeze_vision_encoder</td><td class="n" data-label="값">true</td><td data-label="출처">preset 유지 — 최적이라 검증한 것 아님</td></tr>
+      <tr><td class="k">Learning rate</td><td class="n" data-label="값">1e-4</td><td data-label="출처">preset 유지 — LR search 안 함</td></tr>
+      <tr><td class="k">Image augmentation</td><td class="n" data-label="값">비활성</td><td data-label="출처">기본값 유지</td></tr>
     </table></div>
     <div class="warn"><b>이 비교의 한계.</b>
       epoch는 맞췄지만 데이터 규모와 학습 스텝이 함께 늘어난 것은 사실이라,
@@ -257,18 +257,18 @@
   </figure>
 
   <details><summary>기존 지표로는 왜 안 되는가</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="데이터 표"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="데이터 표"><table>
       <thead><tr><th>선행 연구</th><th>평가 방식</th><th>한계</th></tr></thead>
       <tr><td class="k">Liu, Kang &amp; Ha<br><span class="mono">2502.12599</span></td>
-        <td>접촉력 유지 · waypoint 오차</td>
-        <td>표면 상태를 관측하지 않음. 논문이 스스로 <b>blind policy</b>라 명시</td></tr>
+        <td data-label="평가 방식">접촉력 유지 · waypoint 오차</td>
+        <td data-label="한계">표면 상태를 관측하지 않음. 논문이 스스로 <b>blind policy</b>라 명시</td></tr>
       <tr><td class="k">Touch in the Wild<br><span class="mono">2507.15062</span></td>
-        <td>촉각 기반 접촉 · 이진 성공</td><td>수행 정도가 소실됨</td></tr>
+        <td data-label="평가 방식">촉각 기반 접촉 · 이진 성공</td><td data-label="한계">수행 정도가 소실됨</td></tr>
       <tr><td class="k">CleanUpBench<br><span class="mono">2508.05543</span></td>
-        <td>Coverage Ratio</td>
-        <td>엔드이펙터 <b>궤적</b>의 커버리지일 뿐. 압력 없이 스쳐도 100%</td></tr>
-      <tr><td class="k">OpenGVL · ProgVLA</td><td>VLM 기반 진행도 추정</td>
-        <td>신경망 근사 모델이라 Ground Truth가 될 수 없음</td></tr>
+        <td data-label="평가 방식">Coverage Ratio</td>
+        <td data-label="한계">엔드이펙터 <b>궤적</b>의 커버리지일 뿐. 압력 없이 스쳐도 100%</td></tr>
+      <tr><td class="k">OpenGVL · ProgVLA</td><td data-label="평가 방식">VLM 기반 진행도 추정</td>
+        <td data-label="한계">신경망 근사 모델이라 Ground Truth가 될 수 없음</td></tr>
     </table></div>
   </div></details>
 
@@ -353,13 +353,13 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
       <thead><tr><th>조건</th><th class="n">N</th><th class="n">성공률</th><th class="n">지운 비율</th>
         <th class="n">종료</th><th class="n">cutoff</th></tr></thead>
       <tr><td class="k">132 순정</td><td class="n">54</td><td class="n">0.000</td><td class="n">0.492</td>
-        <td class="n">27.5s</td><td class="n">13 (24.1%)</td></tr>
+        <td class="n">27.5s</td><td class="n wrap">13 (24.1%)</td></tr>
       <tr><td class="k">132 + HAMLET</td><td class="n">54</td><td class="n">0.000</td>
-        <td class="n dn">0.271</td><td class="n">21.7s</td><td class="n">3 (5.6%)</td></tr>
+        <td class="n dn">0.271</td><td class="n">21.7s</td><td class="n wrap">3 (5.6%)</td></tr>
       <tr><td class="k">315 순정</td><td class="n">54</td><td class="n up">0.315</td>
-        <td class="n up">0.802</td><td class="n">28.7s</td><td class="n">7 (13.0%)</td></tr>
+        <td class="n up">0.802</td><td class="n">28.7s</td><td class="n wrap">7 (13.0%)</td></tr>
       <tr><td class="k">315 + HAMLET</td><td class="n">54</td><td class="n dn">0.074</td>
-        <td class="n dn">0.579</td><td class="n">23.1s</td><td class="n">1 (1.9%)</td></tr>
+        <td class="n dn">0.579</td><td class="n">23.1s</td><td class="n wrap">1 (1.9%)</td></tr>
       <caption>종료 시점 평균은 <span class="mono">termination=release</span>인 시행만으로 계산합니다.
         중앙값은 132 순정 0.55 · 315 순정 0.83.</caption>
     </table></div>
