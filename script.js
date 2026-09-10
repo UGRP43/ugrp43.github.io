@@ -1,3 +1,7 @@
+function vidReady(vid, ph){
+  const v = document.getElementById(vid), p = document.getElementById(ph);
+  if (v && v.duration > 0) { v.style.display = "block"; if (p) p.hidden = true; }
+}
 
 const ZONE_MED = {circle:"132 127×122 · 315 129×127",
                   rectangle:"132 136×126 · 315 119×120",
@@ -23,15 +27,13 @@ const D = {"132_base":{"er":[0.815,0.694,0.754,0.404,0.396,0.649,0.273,0.583,0.6
               ["315_base","315 순정"],["315_hamlet","315 +H"]];
   const iw=W-L-R, rh=(H-T-B)/rows.length, x=v=>L+v*iw;
   let s="";
-  for(const t of [0,0.5,0.9,1]){
+  for(const t of [0,0.5,1]){
     s+=`<line x1="${x(t)}" y1="${T-4}" x2="${x(t)}" y2="${H-B+2}"
-          stroke="${t===0.9?'var(--red)':'var(--line)'}" stroke-width="${t===0.9?1.4:1}"
-          ${t===0.9?'stroke-dasharray="3 3"':''}/>`;
+          stroke="var(--line)" stroke-width="1"
+          />`;
     s+=`<text x="${x(t)}" y="${H-B+16}" font-size="9.5" text-anchor="middle"
           fill="var(--ink3)" font-family="IBM Plex Mono,monospace">${t}</text>`;
   }
-  s+=`<text x="${x(0.9)}" y="${T-6}" font-size="9" text-anchor="middle"
-        fill="var(--red)" font-family="IBM Plex Mono,monospace">임계 0.90</text>`;
   rows.forEach(([k,label],ri)=>{
     const cy=T+rh*ri+rh/2, d=D[k];
     s+=`<text x="${L-8}" y="${cy+3.5}" font-size="10.5" text-anchor="end"
