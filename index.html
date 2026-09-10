@@ -176,16 +176,14 @@
       <div class="vwrap">
         <video id="teleop" controls playsinline preload="metadata" loop
                onloadedmetadata="vidReady('teleop','teleopPh')">
-          <source src="dataset-replay.mp4" type="video/mp4">
+          <source src="teleop.mp4" type="video/mp4">
         </video>
         <div class="vph" id="teleopPh" hidden>
-          <b>영상을 재생할 수 없습니다</b>
-          <span>브라우저가 mp4를 지원하지 않는 경우입니다</span>
+          <b>영상을 재생할 수 없습니다</b><span>브라우저가 mp4를 지원하지 않는 경우입니다</span>
         </div>
       </div>
-      <figcaption>수집된 에피소드를 재생기로 돌려본 것입니다.
-        위쪽이 Top 뷰, 아래쪽이 손목 뷰이고, 오른쪽 표는 매 프레임의 관절 state와 action 값입니다.
-        지우개를 집어 삼각형을 지우기까지 928프레임이 기록돼 있습니다.</figcaption>
+      <figcaption>사람이 리더암을 잡고 움직이면 팔로워암이 그대로 따라 하고, 그 동작이 녹화됩니다.
+        이렇게 모은 시연이 132개 또는 315개 모여 하나의 데이터셋이 됩니다.</figcaption>
     </figure>
     <h4>녹화되는 것</h4>
     <ul>
@@ -310,6 +308,21 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
 </section>
 <section class="paper-section" id="results" aria-labelledby="results-title">
   <div class="section-heading"><h2 id="results-title">Results</h2><p>216 rollouts · 4 conditions × 54</p></div>
+  <figure style="margin:0 0 18px">
+    <div class="vwrap">
+      <video id="replay" controls playsinline preload="metadata" loop
+             onloadedmetadata="vidReady('replay','replayPh')">
+        <source src="dataset-replay.mp4" type="video/mp4">
+      </video>
+      <div class="vph" id="replayPh" hidden>
+        <b>영상을 재생할 수 없습니다</b><span>브라우저가 mp4를 지원하지 않는 경우입니다</span>
+      </div>
+    </div>
+    <figcaption>한 시행을 재생기로 돌려본 화면입니다. 위가 Top 뷰, 아래가 손목 뷰이고
+      오른쪽 표는 매 프레임의 관절 state와 action 값입니다.
+      지우개를 집어 삼각형을 지우기까지 928프레임이 기록돼 있습니다.</figcaption>
+  </figure>
+
   <p>점 하나가 시행 하나이고, 가로 위치가 해당 시행의 지운 비율입니다.
     세로선은 각 조건의 중앙값입니다.</p>
   <div class="chart" tabindex="0" role="region" aria-label="조건별 지운 비율 분포">
