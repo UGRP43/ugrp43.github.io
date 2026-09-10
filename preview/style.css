@@ -220,6 +220,7 @@ td.spec { font-variant-numeric: tabular-nums; }
      머리글과 숫자 칸은 단어 중간에서 끊기지 않게 되돌린다 */
   th, th.n { white-space: normal; }
   th, td.n, td.spec { overflow-wrap: normal; word-break: keep-all; }
+  /* 숫자 칸은 nowrap 을 유지한다. 풀면 "3.7e-9" 가 하이픈에서 "3.7e-/9" 로 갈라진다 */
   table { font-size: .9rem; }
   th, th.n { font-size: .82rem; }
   th, td { padding: 10px 9px; }
@@ -232,9 +233,11 @@ td.spec { font-variant-numeric: tabular-nums; }
   .tw th:first-child, .tw td:first-child {
     position: sticky; left: 0; z-index: 2;
     background: #fff; border-right: 1px solid var(--line);
+    /* 고정된 라벨이 "HA/ML/ET" 처럼 쪼개지지 않을 만큼의 최소 폭.
+       keep-all 로 막으면 긴 식별자(freeze_vision_encoder) 때문에 열이 넓어져
+       다른 표까지 가로로 밀리므로, 최소 폭만 주고 끊기 자체는 허용한다 */
+    min-width: 56px;
   }
-  /* 라벨 열에 keep-all 을 주면 열이 넓어져 표 대부분이 다시 가로로 밀린다.
-     라벨이 두 줄로 접히더라도 표 전체가 화면에 들어오는 쪽을 택한다 */
   .tw thead th:first-child { background: #eef3f9; }
 
   .tw, .eq, .chart {
@@ -253,4 +256,16 @@ td.spec { font-variant-numeric: tabular-nums; }
   .chart { padding-left: 12px; padding-right: 12px; }
   .langbar a { min-height: 44px; padding: 4px 18px; }
   .resource-links a { flex: 1 1 auto; }
+}
+
+/* 폰 폭. 6열짜리 결과표까지 가로 스크롤 없이 들어가도록 더 조인다 */
+@media (max-width: 480px) {
+  th, td { padding: 9px 5px; }
+  /* "13 (24.1%)" 처럼 괄호가 붙은 값만 접히게 한다. 이 한 칸 때문에 결과표가 밀렸다 */
+  td.n.wrap { white-space: normal; }
+  /* 라벨이 "HAMLE/T" 로 갈라지지 않을 만큼만 줄인다 */
+  .tw td:first-child { font-size: .82rem; }
+  th, th.n { font-size: .78rem; }
+  td.n { font-size: .82rem; }
+  caption { padding: 11px 8px; font-size: .84rem; }
 }
