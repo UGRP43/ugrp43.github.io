@@ -218,7 +218,11 @@ footer b { font-weight: 500; }
   th, td.n { overflow-wrap: normal; word-break: keep-all; }
   /* 문장이 들어간 칸만 줄바꿈을 허용한다. 글꼴·정렬·크기는 원본 그대로 두고
      white-space 하나만 푼다 — 데스크톱에서는 nowrap 이 그대로라 원본과 동일하다 */
-  td.n.wrap { white-space: normal; text-align: left; font-family: var(--sans); font-size: .86rem; }
+  td.n.wrap { white-space: normal; }
+  /* 문장이 들어간 칸만 본문처럼. 숫자 칸은 위의 wrap 처럼 오른쪽·고정폭을 유지한다 */
+  td.n.txt { white-space: normal; text-align: left; font-family: var(--sans); font-size: .86rem; }
+  /* arXiv 번호가 "2502.1259/9" 로 갈라지지 않게 */
+  .mono { overflow-wrap: normal; word-break: keep-all; }
   /* 숫자 칸은 nowrap 을 유지한다. 풀면 "3.7e-9" 가 하이픈에서 "3.7e-/9" 로 갈라진다 */
   table { font-size: .9rem; }
   th, th.n { font-size: .82rem; }
