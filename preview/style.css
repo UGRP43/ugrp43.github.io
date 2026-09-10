@@ -303,3 +303,24 @@ footer b { font-weight: 500; }
   td.n { font-size: .82rem; }
   caption { padding: 11px 8px; font-size: .84rem; }
 }
+
+/* ---------- 태블릿 (641–1024px) ----------
+   폰의 카드형도, PC의 넓은 여백도 맞지 않는 구간이다.
+   표는 표로 두되 좌우 여백을 줄여 본문 폭을 확보한다 */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .page { width: calc(100% - 48px); }
+  .project-header { padding-top: 52px; }
+  .paper-section { padding: 30px 34px 34px; margin: 30px 0; }
+  .section-heading h2 { font-size: 1.85rem; }
+  .paper-section > p { font-size: 1.05rem; line-height: 1.85; }
+  .dbody { padding: 20px; }
+  .tldr { padding: 18px 22px; }
+  .tldr p { font-size: 1.08rem; }
+  /* 잉크 계산식 한 줄이 19px 삐져나온다. 분철이 안 되는 수식이라 글자를 줄여 맞춘다 */
+  .eq { font-size: .86rem; }
+}
+/* 전후 비교 이미지는 나란히 놓아야 대조가 된다.
+   800px 이하 규칙이 한 열로 내리는 것을 태블릿 폭에서 되돌린다 */
+@media (min-width: 700px) and (max-width: 1024px) {
+  .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+}
