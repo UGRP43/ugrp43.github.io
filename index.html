@@ -172,7 +172,7 @@
     <p>두 팔의 개체차 때문에 관절 절대값을 그대로 보내면 동작이 어긋납니다.
       시작 자세를 맞춘 뒤 <b>관절 변화량만 상대값으로</b> 전달하고, 팔로워암의 현재값을
       기준으로 움직이게 했습니다. 스텝당 최대 변화량도 제한해 급격한 동작을 막았습니다.</p>
-    <figure style="margin:0 0 14px">
+    <figure style="margin:0 0 14px;text-align:center">
       <div class="vwrap">
         <video id="teleop" controls playsinline preload="metadata" loop
                onloadedmetadata="vidReady('teleop','teleopPh')">
@@ -182,7 +182,7 @@
           <b>영상을 재생할 수 없습니다</b><span>브라우저가 mp4를 지원하지 않는 경우입니다</span>
         </div>
       </div>
-      <figcaption>사람이 리더암을 잡고 움직이면 팔로워암이 그대로 따라 하고, 그 동작이 녹화됩니다.
+      <figcaption style="text-align:left">사람이 리더암을 잡고 움직이면 팔로워암이 그대로 따라 하고, 그 동작이 녹화됩니다.
         이렇게 모은 시연이 132개 또는 315개 모여 하나의 데이터셋이 됩니다.</figcaption>
     </figure>
     <h4>녹화되는 것</h4>
@@ -308,7 +308,7 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
 </section>
 <section class="paper-section" id="results" aria-labelledby="results-title">
   <div class="section-heading"><h2 id="results-title">Results</h2><p>216 rollouts · 4 conditions × 54</p></div>
-  <figure style="margin:0 0 18px">
+  <figure style="margin:0 0 18px;text-align:center">
     <div class="vwrap">
       <video id="replay" controls playsinline preload="metadata" loop
              onloadedmetadata="vidReady('replay','replayPh')">
@@ -318,7 +318,7 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
         <b>영상을 재생할 수 없습니다</b><span>브라우저가 mp4를 지원하지 않는 경우입니다</span>
       </div>
     </div>
-    <figcaption>한 시행을 재생기로 돌려본 화면입니다. 위가 Top 뷰, 아래가 손목 뷰이고
+    <figcaption style="text-align:left">한 시행을 재생기로 돌려본 화면입니다. 위가 Top 뷰, 아래가 손목 뷰이고
       오른쪽 표는 매 프레임의 관절 state와 action 값입니다.
       지우개를 집어 삼각형을 지우기까지 928프레임이 기록돼 있습니다.</figcaption>
   </figure>

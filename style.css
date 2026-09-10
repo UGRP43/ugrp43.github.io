@@ -177,3 +177,10 @@ footer b { font-weight: 500; }
 .vph b { font-size: 15px; color: var(--ink2); font-weight: 600; }
 .vph span { font-size: 13px; }
 .vph::before { content: "▶"; display: block; font-size: 24px; color: var(--line2); margin-bottom: 3px; }
+
+/* hidden 속성이 display:flex 에 먹히지 않던 문제 */
+[hidden] { display: none !important; }
+
+/* 영상 가운데 정렬 · 세로 영상도 넘치지 않게 */
+.vwrap { max-width: 760px; margin-left: auto; margin-right: auto; aspect-ratio: auto; }
+.vwrap video { max-height: 66vh; width: auto; max-width: 100%; margin: 0 auto; }
