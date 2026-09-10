@@ -235,10 +235,10 @@ footer b { font-weight: 500; }
   .tw th:first-child, .tw td:first-child {
     position: sticky; left: 0; z-index: 2;
     background: #fff; border-right: 1px solid var(--line);
-    /* 고정된 라벨이 "HA/ML/ET" 처럼 쪼개지지 않을 만큼의 최소 폭.
-       keep-all 로 막으면 긴 식별자(freeze_vision_encoder) 때문에 열이 넓어져
-       다른 표까지 가로로 밀리므로, 최소 폭만 주고 끊기 자체는 허용한다 */
-    min-width: 56px;
+    /* 라벨이 "HAMLE/T" 처럼 갈라지지 않게 단어 중간을 끊지 않는다.
+       긴 식별자가 들어있던 학습 설정 표는 이제 카드로 빠져서
+       이 규칙이 다른 표를 밀어내지 않는다 */
+    word-break: keep-all; overflow-wrap: break-word;
   }
   .tw thead th:first-child { background: #eef3f9; }
 
@@ -296,7 +296,7 @@ footer b { font-weight: 500; }
 
 /* 폰 폭. 6열짜리 결과표까지 가로 스크롤 없이 들어가도록 더 조인다 */
 @media (max-width: 480px) {
-  th, td { padding: 9px 5px; }
+  th, td { padding: 9px 4px; }
   /* 라벨이 "HAMLE/T" 로 갈라지지 않을 만큼만 줄인다 */
   .tw td:first-child { font-size: .82rem; }
   th, th.n { font-size: .78rem; }
