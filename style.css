@@ -184,3 +184,23 @@ footer b { font-weight: 500; }
 /* 영상 가운데 정렬 · 세로 영상도 넘치지 않게 */
 .vwrap { max-width: 760px; margin-left: auto; margin-right: auto; aspect-ratio: auto; }
 .vwrap video { max-height: 66vh; width: auto; max-width: 100%; margin: 0 auto; }
+
+/* ---------- 언어 선택 ---------- */
+.langbar {
+  display: flex; justify-content: flex-end; align-items: center; gap: 6px;
+  padding: 14px 0 0; margin: 0;
+}
+.langbar a {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 36px; padding: 4px 15px;
+  border: 1px solid var(--line); border-radius: 999px; background: #fff;
+  color: var(--ink3); font-size: .92rem; font-weight: 500; line-height: 1.4;
+}
+.langbar a:hover { text-decoration: none; border-color: #8cabd2; color: var(--ink2); }
+.langbar a.on {
+  background: var(--navy); border-color: var(--navy); color: #fff; font-weight: 600;
+}
+.langbar a.on:hover { color: #fff; }
+@media (max-width: 640px) {
+  .langbar { justify-content: center; padding-top: 12px; }
+}

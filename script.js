@@ -1,3 +1,23 @@
+/* ---------- 언어 ---------- */
+const EN = document.documentElement.lang === "en";
+
+(function langBar(){
+  const main = document.querySelector("main.page");
+  if (!main || document.querySelector(".langbar")) return;
+  const bar = document.createElement("nav");
+  bar.className = "langbar";
+  bar.setAttribute("aria-label", EN ? "Language" : "언어 선택");
+  const mk = (href, label, on) => {
+    const a = document.createElement("a");
+    a.href = href + location.hash;
+    a.textContent = label;
+    if (on) { a.className = "on"; a.setAttribute("aria-current", "true"); }
+    return a;
+  };
+  bar.append(mk("./", "한국어", !EN), mk("en.html", "English", EN));
+  main.prepend(bar);
+})();
+
 function vidReady(vid, ph){
   const v = document.getElementById(vid), p = document.getElementById(ph);
   if (v && v.duration > 0) { v.style.display = "block"; if (p) p.hidden = true; }
@@ -8,14 +28,20 @@ const ZONE_MED = {circle:"132 127×122 · 315 129×127",
                   rectangle:"132 136×126 · 315 119×120",
                   triangle:"132 114×131 · 315 109×129"};
 const ZONE_KO = {circle:"원", rectangle:"사각형", triangle:"삼각형"};
+const ZONE_EN = {circle:"Circle", rectangle:"Rectangle", triangle:"Triangle"};
 function setZone(s){
   if (!Object.hasOwn(ZONE_KO, s)) return;
   const zoneImg=document.getElementById("zoneImg"), zoneCap=document.getElementById("zoneCap");
   const zA=document.getElementById("zA"), zB=document.getElementById("zB"), zC=document.getElementById("zC");
   zoneImg.src = "img/zones-" + s + ".jpg";
-  zoneCap.textContent = ZONE_KO[s] + " — 흰 점은 315에만 있는 위치(도형당 61개), 빨간 점은 132 실제 위치(44개). "
-    + "파랑 실선이 315의 2행×3열, 빨강 점선이 132의 2행×2열입니다. "
-    + "median 크기 " + ZONE_MED[s] + " px.";
+  zoneCap.textContent = EN
+    ? ZONE_EN[s] + " — white dots are positions present only in 315 (61 per shape), "
+      + "red dots are the actual 132 positions (44). The blue solid grid is the 2\u00d73 partition of 315, "
+      + "the red dashed grid the 2\u00d72 partition of 132. "
+      + "Median size " + ZONE_MED[s] + " px."
+    : ZONE_KO[s] + " \u2014 흰 점은 315에만 있는 위치(도형당 61개), 빨간 점은 132 실제 위치(44개). "
+      + "파랑 실선이 315의 2행×3열, 빨강 점선이 132의 2행×2열입니다. "
+      + "median 크기 " + ZONE_MED[s] + " px.";
   zA.setAttribute("aria-pressed", s==="circle");
   zB.setAttribute("aria-pressed", s==="rectangle");
   zC.setAttribute("aria-pressed", s==="triangle");
@@ -24,8 +50,9 @@ const D = {"132_base":{"er":[0.815,0.694,0.754,0.404,0.396,0.649,0.273,0.583,0.6
 (function strip(){
   const svg=document.getElementById("strip");
   const W=400,H=200,L=62,R=12,T=14,B=26;
-  const rows=[["132_base","132 순정"],["132_hamlet","132 +H"],
-              ["315_base","315 순정"],["315_hamlet","315 +H"]];
+  const base = EN ? "base" : "순정";
+  const rows=[["132_base","132 "+base],["132_hamlet","132 +H"],
+              ["315_base","315 "+base],["315_hamlet","315 +H"]];
   const iw=W-L-R, rh=(H-T-B)/rows.length, x=v=>L+v*iw;
   let s="";
   for(const t of [0,0.5,1]){
