@@ -254,6 +254,40 @@ footer b { font-weight: 500; }
     background-attachment: local, local, scroll, scroll;
   }
 
+
+  /* ── 읽는 표는 폰에서 표를 그만두고 행 하나를 카드로 세운다 ──
+     비교하는 표(4조건 종합·통계 검정 등)는 표로 남긴다. 세로로 쌓으면 조건 간 대조가 안 된다 */
+  .tw.cards { border: 0; background: none; background-image: none; overflow: visible; margin: 16px 0; }
+  .tw.cards table, .tw.cards tbody, .tw.cards tr { display: block; }
+  .tw.cards thead { display: none; }
+  .tw.cards tr {
+    background: #fff; border: 1px solid var(--line); border-radius: 9px;
+    padding: 13px 15px; margin-bottom: 10px;
+  }
+  .tw.cards tr:last-of-type { margin-bottom: 0; }
+  /* grid/flex 를 쓰면 칸 안의 <b> 강조가 별도 줄로 떨어져 나간다.
+     이름표를 값 위에 블록으로 얹어 문장을 그대로 흐르게 둔다 */
+  .tw.cards td {
+    display: block; padding: 7px 0 0; border: 0; text-align: left;
+    white-space: normal; font-size: .92rem; line-height: 1.7;
+  }
+  .tw.cards td::before {
+    content: attr(data-label); display: block;
+    color: var(--ink3); font-size: .78rem; line-height: 1.6; font-family: var(--sans);
+    letter-spacing: .01em;
+  }
+  /* 첫 칸은 이름표가 아니라 카드 제목이다 */
+  .tw.cards td:first-child {
+    display: block; position: static; min-width: 0;
+    font-weight: 600; color: var(--ink); font-size: 1rem;
+    padding: 0 0 8px; margin-bottom: 6px; border-bottom: 1px solid var(--line);
+  }
+  .tw.cards td:first-child::before { content: none; }
+  /* 머리글이 없는 2열 표(과제 사양)는 값만 한 줄로 */
+  .tw.cards td:not([data-label]) { display: block; }
+  .tw.cards td:not([data-label])::before { content: none; }
+  .tw.cards caption { display: block; border: 0; padding: 10px 2px 0; }
+
   .eq { font-size: .8rem; line-height: 1.75; padding: 14px 15px; }
   .chart { padding-left: 12px; padding-right: 12px; }
   .langbar a { min-height: 44px; padding: 4px 18px; }

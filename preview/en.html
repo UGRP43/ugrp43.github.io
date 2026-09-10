@@ -13,7 +13,7 @@
 <script src="script.js" defer></script>
 </head>
 <body>
-<div style="background:#3b6fb3;color:#fff;text-align:center;padding:7px 12px;font:600 .85rem system-ui,sans-serif">PREVIEW — mobile layout test build</div>
+<div style="background:#3b6fb3;color:#fff;text-align:center;padding:7px 12px;font:600 .85rem system-ui,sans-serif">PREVIEW — mobile-first build</div>
 <a class="skip-link" href="#abstract">Skip to content</a>
 <main class="page"><header class="project-header">
   <h1>Evaluating and Improving VLA<br class="desktop-break"> on a Shape-Erasing Task</h1>
@@ -49,7 +49,7 @@
   </div>
 
   <details><summary>Task specification and required capabilities</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
       <tr><td class="k">Official project title</td><td>Data-efficient task adaptation for robot foundation models</td></tr>
       <tr><td class="k">Final target task</td><td>Erase only the instructed character among several written on the board</td></tr>
       <tr><td class="k">This stage</td><td>Build the pipeline and evaluation protocol on single-shape erasing, and establish a baseline</td></tr>
@@ -86,15 +86,15 @@
     <h4>How the zones were defined</h4>
     <p>We measured the shape position in all 315 source recordings, split them into a top and a bottom row, and applied <b>k-means</b> to the bounding boxes within each row to divide them into left, center, and right. The result is 6 zones, with top and bottom split evenly. The 132 set contains no demonstrations in the center column.</p>
     <h4>What we chose and what we left at the default</h4>
-    <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Setting</th><th class="n">Value</th><th>Source</th></tr></thead>
-      <tr><td class="k">Base model</td><td class="n">smolvla_base</td><td>Project decision</td></tr>
-      <tr><td class="k">Batch size</td><td class="n">8</td><td>Project decision — verified by smoke test</td></tr>
-      <tr><td class="k">Mixed precision</td><td class="n">BF16</td><td>Project decision</td></tr>
-      <tr><td class="k">chunk_size</td><td class="n">50</td><td>Preset default</td></tr>
-      <tr><td class="k">freeze_vision_encoder</td><td class="n">true</td><td>Preset default — not verified as optimal</td></tr>
-      <tr><td class="k">Learning rate</td><td class="n">1e-4</td><td>Preset default — no LR search</td></tr>
-      <tr><td class="k">Image augmentation</td><td class="n">disabled</td><td>Left at default</td></tr>
+      <tr><td class="k">Base model</td><td class="n" data-label="Value">smolvla_base</td><td data-label="Source">Project decision</td></tr>
+      <tr><td class="k">Batch size</td><td class="n" data-label="Value">8</td><td data-label="Source">Project decision — verified by smoke test</td></tr>
+      <tr><td class="k">Mixed precision</td><td class="n" data-label="Value">BF16</td><td data-label="Source">Project decision</td></tr>
+      <tr><td class="k">chunk_size</td><td class="n" data-label="Value">50</td><td data-label="Source">Preset default</td></tr>
+      <tr><td class="k">freeze_vision_encoder</td><td class="n" data-label="Value">true</td><td data-label="Source">Preset default — not verified as optimal</td></tr>
+      <tr><td class="k">Learning rate</td><td class="n" data-label="Value">1e-4</td><td data-label="Source">Preset default — no LR search</td></tr>
+      <tr><td class="k">Image augmentation</td><td class="n" data-label="Value">disabled</td><td data-label="Source">Left at default</td></tr>
     </table></div>
     <div class="warn"><b>A limitation of this comparison.</b>
       We matched epochs, but dataset size and training steps did grow together, so this is not a fully isolated comparison of the two.
@@ -109,16 +109,16 @@
       <li><b>Failure-mode decomposition</b> — record grasp time, termination time, and termination type independently, so manipulation failures separate from judgment failures</li>
     </ul>
     <h4>Termination decided by rule, not by a human</h4>
-    <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Event</th><th>Condition</th><th>Rationale</th></tr></thead>
-      <tr><td class="k">Grasp established</td><td class="n txt">Command 8–35 held for 15 frames · width ≤ 3</td>
-        <td>The approach ramp passes through the same band. Without the width condition it misfires</td></tr>
-      <tr><td class="k">Release detected</td><td class="n txt">+15 or more above grasp · 5 consecutive frames</td>
-        <td>Cutting off a physical attempt on a single-step spike cannot be undone</td></tr>
-      <tr><td class="k">Counted as valid</td><td class="n txt">Grasp held 120+ frames before release</td>
-        <td>Anything shorter is treated as a fumble; wait for a re-grasp</td></tr>
-      <tr><td class="k">Timeout</td><td class="n txt">2,100 steps (70 s)</td>
-        <td>About 2.9× the 720-frame median demonstration</td></tr>
+      <tr><td class="k">Grasp established</td><td class="n txt" data-label="Condition">Command 8–35 held for 15 frames · width ≤ 3</td>
+        <td data-label="Rationale">The approach ramp passes through the same band. Without the width condition it misfires</td></tr>
+      <tr><td class="k">Release detected</td><td class="n txt" data-label="Condition">+15 or more above grasp · 5 consecutive frames</td>
+        <td data-label="Rationale">Cutting off a physical attempt on a single-step spike cannot be undone</td></tr>
+      <tr><td class="k">Counted as valid</td><td class="n txt" data-label="Condition">Grasp held 120+ frames before release</td>
+        <td data-label="Rationale">Anything shorter is treated as a fumble; wait for a re-grasp</td></tr>
+      <tr><td class="k">Timeout</td><td class="n txt" data-label="Condition">2,100 steps (70 s)</td>
+        <td data-label="Rationale">About 2.9× the 720-frame median demonstration</td></tr>
     </table></div>
     <div class="warn"><b>This design is itself a premise of the results.</b>
       The termination condition treats the policy opening the gripper as the end of the rollout.
@@ -190,16 +190,16 @@
   </div></details>
 
   <details><summary>Training configuration — chosen versus left at default</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Setting</th><th class="n">Value</th><th>Source</th></tr></thead>
-      <tr><td class="k">Base model</td><td class="n">smolvla_base</td><td>Project decision</td></tr>
-      <tr><td class="k">Batch size</td><td class="n">8</td><td>Project decision — verified by smoke test</td></tr>
-      <tr><td class="k">Mixed precision</td><td class="n">BF16</td><td>Project decision</td></tr>
-      <tr><td class="k">Epochs</td><td class="n">8.0</td><td>Project decision — identical for both conditions</td></tr>
-      <tr><td class="k">chunk_size</td><td class="n">50</td><td>Preset default</td></tr>
-      <tr><td class="k">freeze_vision_encoder</td><td class="n">true</td><td>Preset default — not verified as optimal</td></tr>
-      <tr><td class="k">Learning rate</td><td class="n">1e-4</td><td>Preset default — no LR search</td></tr>
-      <tr><td class="k">Image augmentation</td><td class="n">disabled</td><td>Left at default</td></tr>
+      <tr><td class="k">Base model</td><td class="n" data-label="Value">smolvla_base</td><td data-label="Source">Project decision</td></tr>
+      <tr><td class="k">Batch size</td><td class="n" data-label="Value">8</td><td data-label="Source">Project decision — verified by smoke test</td></tr>
+      <tr><td class="k">Mixed precision</td><td class="n" data-label="Value">BF16</td><td data-label="Source">Project decision</td></tr>
+      <tr><td class="k">Epochs</td><td class="n" data-label="Value">8.0</td><td data-label="Source">Project decision — identical for both conditions</td></tr>
+      <tr><td class="k">chunk_size</td><td class="n" data-label="Value">50</td><td data-label="Source">Preset default</td></tr>
+      <tr><td class="k">freeze_vision_encoder</td><td class="n" data-label="Value">true</td><td data-label="Source">Preset default — not verified as optimal</td></tr>
+      <tr><td class="k">Learning rate</td><td class="n" data-label="Value">1e-4</td><td data-label="Source">Preset default — no LR search</td></tr>
+      <tr><td class="k">Image augmentation</td><td class="n" data-label="Value">disabled</td><td data-label="Source">Left at default</td></tr>
     </table></div>
     <div class="warn"><b>A limitation of this comparison.</b>
       We matched epochs, but dataset size and training steps did grow together, so this is not a fully isolated comparison of the two.
@@ -226,18 +226,18 @@
   </figure>
 
   <details><summary>Why existing metrics do not work</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Prior work</th><th>Evaluation method</th><th>Limitation</th></tr></thead>
       <tr><td class="k">Liu, Kang &amp; Ha<br><span class="mono">2502.12599</span></td>
-        <td>Contact-force maintenance · waypoint error</td>
-        <td>Never observes the surface state. The paper itself calls it a <b>blind policy</b></td></tr>
+        <td data-label="Evaluation method">Contact-force maintenance · waypoint error</td>
+        <td data-label="Limitation">Never observes the surface state. The paper itself calls it a <b>blind policy</b></td></tr>
       <tr><td class="k">Touch in the Wild<br><span class="mono">2507.15062</span></td>
-        <td>Tactile contact · binary success</td><td>Degree of completion is lost</td></tr>
+        <td data-label="Evaluation method">Tactile contact · binary success</td><td data-label="Limitation">Degree of completion is lost</td></tr>
       <tr><td class="k">CleanUpBench<br><span class="mono">2508.05543</span></td>
-        <td>Coverage Ratio</td>
-        <td>Only covers the end-effector <b>trajectory</b>. Grazing the surface with no pressure still scores 100%</td></tr>
-      <tr><td class="k">OpenGVL · ProgVLA</td><td>VLM-based progress estimation</td>
-        <td>A neural approximation cannot serve as ground truth</td></tr>
+        <td data-label="Evaluation method">Coverage Ratio</td>
+        <td data-label="Limitation">Only covers the end-effector <b>trajectory</b>. Grazing the surface with no pressure still scores 100%</td></tr>
+      <tr><td class="k">OpenGVL · ProgVLA</td><td data-label="Evaluation method">VLM-based progress estimation</td>
+        <td data-label="Limitation">A neural approximation cannot serve as ground truth</td></tr>
     </table></div>
   </div></details>
 
