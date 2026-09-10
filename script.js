@@ -1,6 +1,7 @@
 function vidReady(vid, ph){
   const v = document.getElementById(vid), p = document.getElementById(ph);
   if (v && v.duration > 0) { v.style.display = "block"; if (p) p.hidden = true; }
+  else if (p) { p.hidden = false; }
 }
 
 const ZONE_MED = {circle:"132 127×122 · 315 129×127",

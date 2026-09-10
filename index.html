@@ -172,16 +172,21 @@
     <p>두 팔의 개체차 때문에 관절 절대값을 그대로 보내면 동작이 어긋납니다.
       시작 자세를 맞춘 뒤 <b>관절 변화량만 상대값으로</b> 전달하고, 팔로워암의 현재값을
       기준으로 움직이게 했습니다. 스텝당 최대 변화량도 제한해 급격한 동작을 막았습니다.</p>
-    <div class="vwrap">
-      <video id="teleop" controls playsinline preload="metadata" loop
-             style="display:none" onloadedmetadata="vidReady('teleop','teleopPh')">
-        <source src="teleop.mp4" type="video/mp4">
-      </video>
-      <div class="vph" id="teleopPh">
-        <b>영상 준비 중</b>
-        <span>원격조작으로 시연을 수집하는 장면이 들어갑니다</span>
+    <figure style="margin:0 0 14px">
+      <div class="vwrap">
+        <video id="teleop" controls playsinline preload="metadata" loop
+               onloadedmetadata="vidReady('teleop','teleopPh')">
+          <source src="dataset-replay.mp4" type="video/mp4">
+        </video>
+        <div class="vph" id="teleopPh" hidden>
+          <b>영상을 재생할 수 없습니다</b>
+          <span>브라우저가 mp4를 지원하지 않는 경우입니다</span>
+        </div>
       </div>
-    </div>
+      <figcaption>수집된 에피소드를 재생기로 돌려본 것입니다.
+        위쪽이 Top 뷰, 아래쪽이 손목 뷰이고, 오른쪽 표는 매 프레임의 관절 state와 action 값입니다.
+        지우개를 집어 삼각형을 지우기까지 928프레임이 기록돼 있습니다.</figcaption>
+    </figure>
     <h4>녹화되는 것</h4>
     <ul>
       <li>Top·Wrist 두 대의 RGB 영상</li>
