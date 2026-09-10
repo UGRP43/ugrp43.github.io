@@ -206,10 +206,6 @@ footer b { font-weight: 500; }
 }
 
 /* ---------- 모바일(QR 접속) 가독성 ---------- */
-/* 조건·판정처럼 문장이 들어가는 칸.
-   숫자가 섞여 있어도 문장이므로 nowrap 을 걸지 않는다(걸면 좁은 화면에서 표가 밀려난다) */
-td.spec { font-variant-numeric: tabular-nums; }
-
 /* 가로로 밀리는 영역에 "옆에 더 있다"는 그림자. 끝까지 밀면 사라진다 */
 .tw, .chart { --fadec: #fff; }
 .eq { --fadec: #f3f6fa; }
@@ -219,12 +215,14 @@ td.spec { font-variant-numeric: tabular-nums; }
      단 body 의 overflow-wrap: anywhere 가 "Episodes" 를 "Episod/es" 로 쪼개므로
      머리글과 숫자 칸은 단어 중간에서 끊기지 않게 되돌린다 */
   th, th.n { white-space: normal; }
-  th, td.n, td.spec { overflow-wrap: normal; word-break: keep-all; }
+  th, td.n { overflow-wrap: normal; word-break: keep-all; }
+  /* 문장이 들어간 칸만 줄바꿈을 허용한다. 글꼴·정렬·크기는 원본 그대로 두고
+     white-space 하나만 푼다 — 데스크톱에서는 nowrap 이 그대로라 원본과 동일하다 */
+  td.n.wrap { white-space: normal; text-align: left; font-family: var(--sans); font-size: .86rem; }
   /* 숫자 칸은 nowrap 을 유지한다. 풀면 "3.7e-9" 가 하이픈에서 "3.7e-/9" 로 갈라진다 */
   table { font-size: .9rem; }
   th, th.n { font-size: .82rem; }
   th, td { padding: 10px 9px; }
-  td.spec { font-size: .84rem; }
   caption { padding: 12px 11px; }
 
   /* 그래도 밀어야 하는 표는 첫 열을 고정해 어느 행인지 놓치지 않게 한다.
@@ -261,8 +259,6 @@ td.spec { font-variant-numeric: tabular-nums; }
 /* 폰 폭. 6열짜리 결과표까지 가로 스크롤 없이 들어가도록 더 조인다 */
 @media (max-width: 480px) {
   th, td { padding: 9px 5px; }
-  /* "13 (24.1%)" 처럼 괄호가 붙은 값만 접히게 한다. 이 한 칸 때문에 결과표가 밀렸다 */
-  td.n.wrap { white-space: normal; }
   /* 라벨이 "HAMLE/T" 로 갈라지지 않을 만큼만 줄인다 */
   .tw td:first-child { font-size: .82rem; }
   th, th.n { font-size: .78rem; }
