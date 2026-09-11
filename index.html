@@ -346,12 +346,11 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
   </div>
   <dl class="stats">
     <div><dt>데이터 132 → 315</dt><dd>0.49 → <span style="color:var(--navy)">0.80</span></dd></div>
-    <div><dt>최고 성공률</dt><dd>17<span style="font-size:14px;color:var(--ink3)"> / 54</span></dd></div>
     <div><dt>조기 종료</dt><dd style="color:var(--red)">66<span style="font-size:14px">%</span></dd></div>
   </dl>
   <p>시연 데이터를 132개에서 315개로 늘리자 지운 비율이 0.49에서 0.80으로 상승했습니다
-    (Mann–Whitney p = 3.7e-9). 그러나 성공률은 17/54에 그쳤고, 실패의 대부분은
-    타임아웃이 아니라 잉크가 남은 상태에서 그리퍼를 연 경우였습니다.</p>
+    (Mann–Whitney p = 3.7e-9). 하지만 많은 시행에서 타임아웃이 아니라
+    잉크가 남은 상태에서 그리퍼를 여는 조기 종료가 관찰됐습니다.</p>
   <p>종료 시각과 지운 비율의 상관을 확인한 결과, 조작 성능이 높은 315 순정 모델에서는
     release 시각이 기록된 47회 기준 Pearson <span class="mono">r = −0.063</span> (<span class="mono">p = 0.674</span>)로 사실상 무관했습니다.
     이 데이터에서는 release 시각과 지운 양 사이의 선형 관계가 확인되지 않았다는 의미입니다.</p>

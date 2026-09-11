@@ -322,12 +322,11 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
   </div>
   <dl class="stats">
     <div><dt>Data 132 → 315</dt><dd>0.49 → <span style="color:var(--navy)">0.80</span></dd></div>
-    <div><dt>Best success rate</dt><dd>17<span style="font-size:14px;color:var(--ink3)"> / 54</span></dd></div>
     <div><dt>Early termination</dt><dd style="color:var(--red)">66<span style="font-size:14px">%</span></dd></div>
   </dl>
   <p>Growing the demonstration set from 132 to 315 episodes raised the erased fraction from 0.49 to 0.80
-    (Mann–Whitney p = 3.7e-9). The success rate, however, stopped at 17/54, and most failures were not
-    timeouts but cases where the gripper opened while ink was still on the board.</p>
+    (Mann–Whitney p = 3.7e-9). However, many trials ended early with the gripper opening while ink remained,
+    rather than by timing out.</p>
   <p>Checking the correlation between termination time and erased fraction, the 315 base model — the stronger one
     at manipulation — showed Pearson <span class="mono">r = −0.063</span> (<span class="mono">p = 0.674</span>) across the 47 trials with a recorded release time, effectively unrelated.
     In other words, these data do not show a linear relationship between release time and the amount erased.</p>
