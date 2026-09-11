@@ -417,3 +417,17 @@ body { padding-top: 46px; }
 @media (max-width: 480px) {
   .votebar span { font-size: .85rem; padding: 6px 14px; }
 }
+
+/* ---------- 첫 진입 확대 ---------- */
+@keyframes pagegrow {
+  from { transform: scale(.74); opacity: 0; }
+  60%  { opacity: 1; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+main.page {
+  transform-origin: 50% 0;
+  animation: pagegrow .95s cubic-bezier(.19,.72,.26,1) backwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  main.page { animation: none; }
+}
