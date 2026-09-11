@@ -71,9 +71,9 @@ const D = {"132_base":{"er":[0.815,0.694,0.754,0.404,0.396,0.649,0.273,0.583,0.6
       s+=`<text x="${L-8}" y="${cy+3.5}" font-size="10.5" text-anchor="end"
             fill="var(--ink2)" font-family="IBM Plex Mono,monospace">${LABEL[k]}</text>`;
       d.er.forEach((v,i)=>{
-        const j=((i*37)%11-5)*(rh*0.055), ok=v>=0.9;
+        const j=((i*37)%11-5)*(rh*0.055);
         s+=`<circle cx="${x(v).toFixed(1)}" cy="${(cy+j).toFixed(1)}" r="2.6"
-              fill="${ok?'var(--green)':'var(--navy)'}" opacity="${ok?.95:.4}"/>`;
+              fill="var(--navy)" opacity=".45"/>`;
       });
       s+=`<line x1="${x(d.med)}" y1="${cy-rh*0.34}" x2="${x(d.med)}" y2="${cy+rh*0.34}"
             stroke="var(--ink)" stroke-width="2"/>`;
