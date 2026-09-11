@@ -385,3 +385,35 @@ footer b { font-weight: 500; }
 /* 지도교수 개인 페이지 링크 */
 .advisor a { color: inherit; text-decoration: none; }
 .advisor a:hover strong { text-decoration: underline; }
+
+/* ---------- 인기투표 안내 ---------- */
+body { padding-top: 46px; }
+.votebar {
+  position: fixed; top: 0; left: 0; right: 0; height: 46px;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none; z-index: 60;
+}
+.votebar span {
+  display: inline-block; max-width: calc(100% - 24px);
+  padding: 7px 20px; border-radius: 999px;
+  background: var(--navy); color: #fff;
+  font-size: .95rem; font-weight: 600; line-height: 1.4;
+  text-align: center; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  box-shadow: 0 3px 12px #18283a2e;
+  opacity: 0;
+  animation: votepeek 5s ease-in-out infinite;
+}
+@keyframes votepeek {
+  0%   { opacity: 0; transform: translateY(-7px); }
+  4%   { opacity: 1; transform: translateY(0); }
+  20%  { opacity: 1; transform: translateY(0); }
+  26%  { opacity: 0; transform: translateY(-7px); }
+  100% { opacity: 0; transform: translateY(-7px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .votebar span { animation: none; opacity: 1; }
+}
+@media (max-width: 480px) {
+  .votebar span { font-size: .85rem; padding: 6px 14px; }
+}

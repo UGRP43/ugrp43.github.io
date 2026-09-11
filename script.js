@@ -118,3 +118,19 @@ setZone("circle");
   if (wait <= 0) show();
   else if (wait < 6 * 3600 * 1000) setTimeout(show, wait);  /* 미리 열어 둔 탭도 시각이 되면 표시된다 */
 })();
+
+/* 인기투표 안내. 최상단에서 5초마다 1초씩 잠깐 나타난다.
+   자리는 항상 비워 두므로(body 위 여백) 글이 떴다 사라져도 본문이 밀리지 않는다 */
+(function voteBar(){
+  const main = document.querySelector("main.page");
+  if (!main || document.querySelector(".votebar")) return;
+  const bar = document.createElement("div");
+  bar.className = "votebar";
+  bar.setAttribute("aria-hidden", "true");
+  const msg = document.createElement("span");
+  msg.textContent = EN
+    ? "If you enjoyed this, please vote for us in the popular vote."
+    : "보시고 재밌으셨으면, 인기투표 부탁드립니다.";
+  bar.appendChild(msg);
+  document.body.insertBefore(bar, document.body.firstChild);
+})();
