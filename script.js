@@ -139,7 +139,7 @@ setZone("circle");
   const STEPS = [0.40, 0.70, 1];
   let n = 0;
   const blink = () => {
-    msg.style.setProperty("--s", STEPS[Math.min(n, STEPS.length - 1)]);
+    msg.style.transform = "scale(" + STEPS[Math.min(n, STEPS.length - 1)] + ")";
     n++;
     msg.classList.remove("peek");
     void msg.offsetWidth;          /* 리플로우를 일으켜 애니메이션을 다시 시작시킨다 */

@@ -402,8 +402,7 @@ body { padding-top: 46px; }
   overflow: hidden; text-overflow: ellipsis;
   box-shadow: 0 3px 12px #18283a2e;
   opacity: 0;
-  --s: 1;
-  transform: scale(var(--s));
+  transform: scale(1);
 }
 /* 한 번 뜰 때는 크기가 고정이고, 뜰 때마다 --s 가 커진다 (script.js) */
 .votebar span.peek { animation: votepeek 1.2s ease-in-out; }
@@ -414,7 +413,7 @@ body { padding-top: 46px; }
   100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .votebar span { animation: none !important; opacity: 1; --s: 1; }
+  .votebar span { animation: none !important; opacity: 1; transform: scale(1) !important; }
 }
 @media (max-width: 480px) {
   .votebar span { font-size: .85rem; padding: 6px 14px; }
