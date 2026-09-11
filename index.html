@@ -352,9 +352,9 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
   <p>시연 데이터를 132개에서 315개로 늘리자 지운 비율이 0.49에서 0.80으로 상승했습니다
     (Mann–Whitney p = 3.7e-9). 그러나 성공률은 17/54에 그쳤고, 실패의 대부분은
     타임아웃이 아니라 잉크가 남은 상태에서 그리퍼를 연 경우였습니다.</p>
-  <p>종료 시각과 지운 비율의 상관을 확인한 결과, 조작 성능이 높은 315 모델에서
-    상관계수가 <span class="mono">0.014</span>로 사실상 무관했습니다.
-    종료 시점이 지운 양과 독립적으로 결정된다는 의미입니다.</p>
+  <p>종료 시각과 지운 비율의 상관을 확인한 결과, 조작 성능이 높은 315 순정 모델에서는
+    release 시각이 기록된 47회 기준 Pearson <span class="mono">r = −0.063</span> (<span class="mono">p = 0.674</span>)로 사실상 무관했습니다.
+    이 데이터에서는 release 시각과 지운 양 사이의 선형 관계가 확인되지 않았다는 의미입니다.</p>
   <p>원인은 모델 구조에 있습니다. SmolVLA에는 stop token이나 completion head가 없습니다.
     그리퍼를 여는 동작도 7차원 행동 예측값 중 하나이므로, 작업 완료를 표현할 출력이
     존재하지 않습니다.</p>
@@ -416,14 +416,15 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
     <h4>② 평가 프로토콜도 완료를 확인하지 않는다</h4>
     <p>롤아웃 종료 조건 자체가 정책이 그리퍼를 여는 행동을 관측하면 끝입니다.
       잉크를 별도로 확인해서 멈추는 구조가 아닙니다.</p>
-    <h4>③ 상관관계가 없다</h4>
+    <h4 id="release-time-correlation">③ 종료 시각과 지운 비율의 상관</h4>
     <div class="tw" tabindex="0" role="region" aria-label="데이터 표"><table>
-      <thead><tr><th>조건</th><th class="n">종료 시각 ↔ 지운 비율</th></tr></thead>
-      <tr><td class="k">132 계열 (HAMLET 포함)</td><td class="n">ρ ≈ 0.45 (p &lt; 0.01)</td></tr>
-      <tr><td class="k">315 순정</td><td class="n dn">0.014</td></tr>
-      <tr><td class="k">315 + HAMLET</td><td class="n dn">0.072</td></tr>
-      <caption>132 계열은 순정과 HAMLET 시행을 합쳐 계산한 값이고, 315는 두 조건을 따로 계산했습니다.
-        조작을 잘하게 된 315 계열일수록 오히려 시간과 결과가 무관해집니다.</caption>
+      <thead><tr><th>모델</th><th class="n">학습 데이터</th><th class="n">N</th><th class="n">Pearson r</th><th class="n">p</th><th>해석</th></tr></thead>
+      <tr><td class="k">순정 (smolvla)</td><td class="n">132</td><td class="n">41</td><td class="n up">0.360</td><td class="n">0.021</td><td>유의한 양의 상관</td></tr>
+      <tr><td class="k">순정 (smolvla)</td><td class="n">315</td><td class="n">47</td><td class="n dn">−0.063</td><td class="n">0.674</td><td>유의하지 않음</td></tr>
+      <tr><td class="k">HAMLET (smolvla_hamlet)</td><td class="n">132</td><td class="n">51</td><td class="n up">0.447</td><td class="n">0.001</td><td>유의한 양의 상관</td></tr>
+      <tr><td class="k">HAMLET (smolvla_hamlet)</td><td class="n">315</td><td class="n">53</td><td class="n">0.070</td><td class="n">0.621</td><td>유의하지 않음</td></tr>
+      <caption><span class="mono">release_s</span>와 <span class="mono">erased_target</span>의 양측 Pearson 상관입니다. cutoff 등 release 시각이 없는 시행은 제외했습니다.
+        132와 315는 각각 해당 데이터셋의 세부 조건을 묶되, 모델은 서로 합치지 않고 계산했습니다. 통상 p &lt; 0.05를 유의 기준으로 사용합니다.</caption>
     </table></div>
     <h4>④ 시간을 더 줘도 안 된다</h4>
     <ul>
@@ -565,8 +566,8 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
             순정(cutoff 20회)보다 타임아웃은 줄었지만, 절반 이상 지우지 못한 시행이 16건에서 56건으로 늘었습니다.</caption>
         </table></div>
         <h4>종료 시각과 지운 비율의 상관</h4>
-        <p>315 + HAMLET의 상관계수는 <span class="mono">0.072</span>로, 순정(<span class="mono">0.014</span>)과 마찬가지로
-          종료 시점이 지운 양과 무관했습니다. 메모리를 추가해도 완료 판단의 근거가 생기지 않았습니다.</p>
+        <p>315 + HAMLET의 상관계수는 <span class="mono">0.070</span> (<span class="mono">p = 0.621</span>)로, 순정(<span class="mono">−0.063</span>, <span class="mono">p = 0.674</span>)과 마찬가지로
+          종료 시점이 지운 양과 무관했습니다. 모델별 132/315 분석은 <a href="#release-time-correlation">통계 결과 표</a>에서 확인할 수 있습니다.</p>
       </div></details>
       <details><summary>왜 SmolVLA에서는 다르게 동작했는가</summary><div class="dbody">
         <p>HAMLET은 매 시점의 지각을 <b>모먼트 토큰</b>으로 압축해 최근 T=4개를 메모리에 담고

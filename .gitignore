@@ -1,3 +1,6 @@
 # 발표·보고 자료 원본은 공개 사이트 저장소에 올리지 않는다
 *.pptx
 ~$*.pptx
+
+# Local rollout-analysis export
+episodes_216_combined.csv

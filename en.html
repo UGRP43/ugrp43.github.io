@@ -328,9 +328,9 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
   <p>Growing the demonstration set from 132 to 315 episodes raised the erased fraction from 0.49 to 0.80
     (Mann–Whitney p = 3.7e-9). The success rate, however, stopped at 17/54, and most failures were not
     timeouts but cases where the gripper opened while ink was still on the board.</p>
-  <p>Checking the correlation between termination time and erased fraction, the 315 model — the stronger one
-    at manipulation — showed a coefficient of <span class="mono">0.014</span>, effectively unrelated.
-    In other words, when the policy stops is decided independently of how much it has erased.</p>
+  <p>Checking the correlation between termination time and erased fraction, the 315 base model — the stronger one
+    at manipulation — showed Pearson <span class="mono">r = −0.063</span> (<span class="mono">p = 0.674</span>) across the 47 trials with a recorded release time, effectively unrelated.
+    In other words, these data do not show a linear relationship between release time and the amount erased.</p>
   <p>The cause lies in the architecture. SmolVLA has no stop token and no completion head.
     Opening the gripper is just one of seven predicted action dimensions, so no output exists
     that could express task completion.</p>
@@ -392,14 +392,15 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
     <h4>② The evaluation protocol does not check completion either</h4>
     <p>The rollout termination condition itself ends the trial the moment the policy is observed opening the gripper.
       It is not structured to check the ink separately before stopping.</p>
-    <h4>③ There is no correlation</h4>
+    <h4 id="release-time-correlation">③ Correlation between release time and erased fraction</h4>
     <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
-      <thead><tr><th>Condition</th><th class="n">Termination time ↔ erased fraction</th></tr></thead>
-      <tr><td class="k">132 family (incl. HAMLET)</td><td class="n">ρ ≈ 0.45 (p &lt; 0.01)</td></tr>
-      <tr><td class="k">315 base</td><td class="n dn">0.014</td></tr>
-      <tr><td class="k">315 + HAMLET</td><td class="n dn">0.072</td></tr>
-      <caption>The 132 family pools base and HAMLET rollouts; 315 is computed separately for each condition.
-        The better the manipulation gets — the 315 family — the more time and outcome become unrelated.</caption>
+      <thead><tr><th>Model</th><th class="n">Training data</th><th class="n">N</th><th class="n">Pearson r</th><th class="n">p</th><th>Interpretation</th></tr></thead>
+      <tr><td class="k">Base (smolvla)</td><td class="n">132</td><td class="n">41</td><td class="n up">0.360</td><td class="n">0.021</td><td>Significant positive correlation</td></tr>
+      <tr><td class="k">Base (smolvla)</td><td class="n">315</td><td class="n">47</td><td class="n dn">−0.063</td><td class="n">0.674</td><td>Not significant</td></tr>
+      <tr><td class="k">HAMLET (smolvla_hamlet)</td><td class="n">132</td><td class="n">51</td><td class="n up">0.447</td><td class="n">0.001</td><td>Significant positive correlation</td></tr>
+      <tr><td class="k">HAMLET (smolvla_hamlet)</td><td class="n">315</td><td class="n">53</td><td class="n">0.070</td><td class="n">0.621</td><td>Not significant</td></tr>
+      <caption>Two-sided Pearson correlations between <span class="mono">release_s</span> and <span class="mono">erased_target</span>. Trials without a release time, including cutoffs, are excluded.
+        The 132 and 315 rows each pool their respective dataset's subconditions, but the models are calculated separately. We use p &lt; 0.05 as the conventional significance threshold.</caption>
     </table></div>
     <h4>④ More time does not help</h4>
     <ul>
@@ -539,8 +540,8 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
             Timeouts dropped compared with the base models (20 cutoffs), but rollouts that erased less than half grew from 16 to 56.</caption>
         </table></div>
         <h4>Correlation between termination time and erased fraction</h4>
-        <p>For 315 + HAMLET the coefficient is <span class="mono">0.072</span>; as with the base model (<span class="mono">0.014</span>),
-          when the policy stops is unrelated to how much it has erased. Adding memory did not give the policy grounds for judging completion.</p>
+        <p>For 315 + HAMLET the coefficient is <span class="mono">0.070</span> (<span class="mono">p = 0.621</span>); as with the base model (<span class="mono">−0.063</span>, <span class="mono">p = 0.674</span>),
+          when the policy stops is unrelated to how much it has erased. See the <a href="#release-time-correlation">statistical-results table</a> for the model-specific 132/315 analysis.</p>
       </div></details>
       <details><summary>Why it behaved differently on SmolVLA</summary><div class="dbody">
         <p>HAMLET compresses the perception at each timestep into a <b>moment token</b>, keeps the most recent T=4 in memory,
