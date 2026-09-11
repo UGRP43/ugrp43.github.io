@@ -402,32 +402,18 @@ body { padding-top: 46px; }
   overflow: hidden; text-overflow: ellipsis;
   box-shadow: 0 3px 12px #18283a2e;
   opacity: 0;
-  animation: votepeek 5s ease-in-out infinite;
+  animation: votepeek 5s cubic-bezier(.18,.78,.28,1) infinite;
 }
 @keyframes votepeek {
-  0%   { opacity: 0; transform: translateY(-7px); }
-  4%   { opacity: 1; transform: translateY(0); }
-  20%  { opacity: 1; transform: translateY(0); }
-  26%  { opacity: 0; transform: translateY(-7px); }
-  100% { opacity: 0; transform: translateY(-7px); }
+  0%   { opacity: 0; transform: scale(.18); }
+  4%   { opacity: 1; }
+  18%  { opacity: 1; transform: scale(1); }
+  24%  { opacity: 0; transform: scale(1); }
+  100% { opacity: 0; transform: scale(.18); }
 }
 @media (prefers-reduced-motion: reduce) {
   .votebar span { animation: none; opacity: 1; }
 }
 @media (max-width: 480px) {
   .votebar span { font-size: .85rem; padding: 6px 14px; }
-}
-
-/* ---------- 첫 진입 확대 ---------- */
-@keyframes pagegrow {
-  from { transform: scale(.74); opacity: 0; }
-  60%  { opacity: 1; }
-  to   { transform: scale(1);   opacity: 1; }
-}
-main.page {
-  transform-origin: 50% 0;
-  animation: pagegrow .95s cubic-bezier(.19,.72,.26,1) backwards;
-}
-@media (prefers-reduced-motion: reduce) {
-  main.page { animation: none; }
 }
