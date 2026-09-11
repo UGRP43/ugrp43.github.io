@@ -381,3 +381,7 @@ footer b { font-weight: 500; }
 /* ---------- 방문 수 ---------- */
 .hits { margin-top: 16px; }
 .hits img { display: inline-block; height: 20px; width: auto; border: 0; border-radius: 3px; opacity: .85; }
+
+/* 지도교수 개인 페이지 링크 */
+.advisor a { color: inherit; text-decoration: none; }
+.advisor a:hover strong { text-decoration: underline; }
