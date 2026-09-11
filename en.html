@@ -22,8 +22,8 @@
   <p class="advisor">Advisor <strong>Inhwan Bae</strong></p>
   <p class="affiliations">DGIST School of Undergraduate Studies · Dept. of Electrical Engineering and Computer Science</p>
   <nav class="resource-links" aria-label="Jump to section">
-    <a href="#method"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z M14 3v5h4 M10 12h5 M10 16h5"/></svg>Method</a>
     <a href="#datasets"><svg aria-hidden="true" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v7c0 4 16 4 16 0V5 M4 12v7c0 4 16 4 16 0v-7"/></svg>Datasets</a>
+    <a href="#method"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 3h7l4 4v14H7z M14 3v5h4 M10 12h5 M10 16h5"/></svg>Method</a>
     <a href="#results"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 3v17h17 M8 16v-5 M13 16V6 M18 16v-8"/></svg>Results</a>
   </nav>
 </header>
@@ -34,7 +34,9 @@
   </figure><section class="paper-section abstract" id="abstract" aria-labelledby="abstract-title">
 <div class="section-heading"><h2 id="abstract-title">Abstract</h2><p>Overview</p></div>
 <p>We trained a robot foundation model (Vision-Language-Action, VLA) to erase shapes drawn on a whiteboard, then measured its performance and its limits on a physical robot. Building on the Agilex PiPER and SmolVLA, we assembled a pipeline that connects demonstration collection, policy training, real-hardware control, and ink-area-based evaluation.</p>
-<p>We ran 216 rollouts in total across four conditions, combining two dataset sizes with the presence or absence of HAMLET. We measured binary success rate alongside erased fraction, and examined how adding memory, changing the action representation, augmenting with synthetic data, and correcting with human intervention each affected manipulation stability and target recognition.</p>
+<p>We evaluated base models trained on 132 and 315 demonstrations, 54 rollouts per condition and 108 in total. Scaling the demonstrations raised the mean erased fraction from 0.49 to 0.80, but many rollouts ended early with the gripper opening while ink remained, identifying completion judgment as the main limitation.</p>
+<p>To address this, we ported two prior methods. HAMLET, which lets the policy reference recent scenes as memory, was evaluated over 108 additional rollouts: termination came 5–6 s earlier and the erased fraction fell by about 0.22, which we interpret as the memory learning elapsed time rather than remaining ink. ABPolicy, which predicts B-spline control points instead of joint values, cut abrupt motion (RMS jerk) to about one ninth but did not improve task performance, suggesting that completion judgment, not motion instability, is the core limitation.</p>
+<p>In addition, models trained only on single shapes could not identify the target when two shapes were on the board and stalled (STUCK). Augmenting the data with synthetic distractor shapes improved target recognition but left a right-side bias. HG-DAgger, which collects correction data through human intervention, learned the correction while preserving existing behavior, but because corrections only went leftward, a left-side bias emerged. This suggests that the directional balance of the data, more than the correction technique itself, governs target-recognition performance.</p>
 </section><section class="paper-section" id="task" aria-labelledby="task-title">
   <div class="section-heading"><h2 id="task-title">Task</h2><p>Task definition</p></div>
   <p>Most public VLA demos are a single pick-and-place motion. This project chose shape erasing in order to test whether the same performance holds on a task made of several steps that must happen in order.</p>
@@ -49,7 +51,6 @@
 
   <details><summary>Task specification and required capabilities</summary><div class="dbody">
     <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
-      <tr><td class="k">Official project title</td><td>Data-efficient task adaptation for robot foundation models</td></tr>
       <tr><td class="k">Final target task</td><td>Erase only the instructed character among several written on the board</td></tr>
       <tr><td class="k">This stage</td><td>Build the pipeline and evaluation protocol on single-shape erasing, and establish a baseline</td></tr>
       <tr><td class="k">Model</td><td>SmolVLA <span class="mono">lerobot/smolvla_base</span> · 450M</td></tr>
@@ -63,69 +64,59 @@
       <li><b>Contact-rich control</b> — grasp the eraser and rub across the target region</li>
     </ul>
     <h4>What to know about SmolVLA's architecture first</h4>
-    <p>SmolVLA inherits the π₀ architecture: the vision-language layers and the action layers run alternately, layer by layer, exchanging K/V. A single inference emits an entire action chunk covering the next 50 steps.</p>
+    <p>SmolVLA consists of a pretrained VLM (SmolVLM-2) and an action expert trained with flow matching.
+      Whereas π₀ keeps the VLM and action-expert weights inside a single transformer that shares self-attention at every layer,
+      SmolVLA's action expert interleaves cross-attention and self-attention layers,
+      attends to the VLM's keys and values (K/V) in its cross-attention layers, and uses features only up to an intermediate VLM layer (N = L/2) rather than the last.
+      A single inference emits the next 50 steps of actions (an action chunk) at once.</p>
     <div class="warn"><b>There is no stop token and no completion head.</b>
-      Even opening the gripper is just one of seven predicted action dimensions, so the model has no output that can express "the task is done."
-      This single fact explains every result that follows.</div>
+      Even opening the gripper is just one of seven predicted action dimensions, so the model has no output that can express "the task is done."</div>
   </div></details>
 </section>
-<section class="paper-section" id="method" aria-labelledby="method-title">
-  <div class="section-heading"><h2 id="method-title">Method</h2><p>Real-robot pipeline</p></div>
-
-  <p>We added three things on top of LeRobot and the PiPER plugin. To compensate for unit-to-unit differences between the two arms we mapped joint changes as relative deltas; we damped oscillation in the model output with a per-step EMA; and we implemented an 8.0 N·m torque-based emergency stop to prevent excessive contact.</p>
-  <p>To keep evaluation objective, an alignment tool placed the eraser and the shape within 5 px of the reference before every trial. All 216 rollouts were re-verified by hand, including ambiguous cases where the eraser overlapped the shape; even after 33% of the masks were corrected, the direction and statistical significance of every conclusion held.</p>
-
-  <details><summary>Datasets and training configuration</summary><div class="dbody">
-    <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
-      <thead><tr><th>Dataset</th><th class="n">Ep</th><th class="n">Frames</th><th>Zones</th></tr></thead>
-      <tr><td class="k">pick_up_the_eraser_132</td><td class="n">132</td><td class="n">65,265</td><td>4</td></tr>
-      <tr><td class="k">pick_up_the_eraser_315</td><td class="n">315</td><td class="n">167,589</td><td>6</td></tr>
-      <caption>Both models trained for 8.0 epochs. The axis we held fixed is passes over the data, not compute.</caption>
-    </table></div>
-    <h4>How the zones were defined</h4>
-    <p>We measured the shape position in all 315 source recordings, split them into a top and a bottom row, and applied <b>k-means</b> to the bounding boxes within each row to divide them into left, center, and right. The result is 6 zones, with top and bottom split evenly. The 132 set contains no demonstrations in the center column.</p>
-    <h4>What we chose and what we left at the default</h4>
-    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
-      <thead><tr><th>Setting</th><th class="n">Value</th><th>Source</th></tr></thead>
-      <tr><td class="k">Base model</td><td class="n" data-label="Value">smolvla_base</td><td data-label="Source">Project decision</td></tr>
-      <tr><td class="k">Batch size</td><td class="n" data-label="Value">8</td><td data-label="Source">Project decision — verified by smoke test</td></tr>
-      <tr><td class="k">Mixed precision</td><td class="n" data-label="Value">BF16</td><td data-label="Source">Project decision</td></tr>
-      <tr><td class="k">chunk_size</td><td class="n" data-label="Value">50</td><td data-label="Source">Preset default</td></tr>
-      <tr><td class="k">freeze_vision_encoder</td><td class="n" data-label="Value">true</td><td data-label="Source">Preset default — not verified as optimal</td></tr>
-      <tr><td class="k">Learning rate</td><td class="n" data-label="Value">1e-4</td><td data-label="Source">Preset default — no LR search</td></tr>
-      <tr><td class="k">Image augmentation</td><td class="n" data-label="Value">disabled</td><td data-label="Source">Left at default</td></tr>
-    </table></div>
-    <div class="warn"><b>A limitation of this comparison.</b>
-      We matched epochs, but dataset size and training steps did grow together, so this is not a fully isolated comparison of the two.
-      That is why we also report the aggregate over the 4 shared zones.</div>
-  </div></details>
-
-  <details><summary>Evaluation controls and termination rules</summary><div class="dbody">
-    <p>Real-robot evaluation easily picks up experimenter bias and spatial-placement bias. We followed <b>VLA-Replica</b>, a benchmark protocol for physical VLA evaluation.</p>
-    <ul>
-      <li><b>Visual pre-alignment</b> — project the training-data reference bbox live onto the camera stream and place within 5 px before every trial</li>
-      <li><b>Wilson score 95% CI</b> — with a finite sample, report confidence intervals rather than point estimates</li>
-      <li><b>Failure-mode decomposition</b> — record grasp time, termination time, and termination type independently, so manipulation failures separate from judgment failures</li>
-    </ul>
-    <h4>Termination decided by rule, not by a human</h4>
-    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
-      <thead><tr><th>Event</th><th>Condition</th><th>Rationale</th></tr></thead>
-      <tr><td class="k">Grasp established</td><td class="n txt" data-label="Condition">Command 8–35 held for 15 frames · width ≤ 3</td>
-        <td data-label="Rationale">The approach ramp passes through the same band. Without the width condition it misfires</td></tr>
-      <tr><td class="k">Release detected</td><td class="n txt" data-label="Condition">+15 or more above grasp · 5 consecutive frames</td>
-        <td data-label="Rationale">Cutting off a physical attempt on a single-step spike cannot be undone</td></tr>
-      <tr><td class="k">Counted as valid</td><td class="n txt" data-label="Condition">Grasp held 120+ frames before release</td>
-        <td data-label="Rationale">Anything shorter is treated as a fumble; wait for a re-grasp</td></tr>
-      <tr><td class="k">Timeout</td><td class="n txt" data-label="Condition">2,100 steps (70 s)</td>
-        <td data-label="Rationale">About 2.9× the 720-frame median demonstration</td></tr>
-    </table></div>
-    <div class="warn"><b>This design is itself a premise of the results.</b>
-      The termination condition treats the policy opening the gripper as the end of the rollout.
-      It does not check whether the ink was actually erased before stopping.</div>
+<section class="paper-section" id="pipeline" aria-labelledby="pipeline-title">
+  <div class="section-heading"><h2 id="pipeline-title">Pipeline</h2><p>Real-robot control pipeline</p></div>
+  <p>We added three capabilities for real-robot control on top of LeRobot and the PiPER plugin.</p>
+  <div class="pipe-row" style="--pipe-cols: minmax(0, 2.847fr) minmax(0, 3.774fr) minmax(0, 2.532fr)">
+    <figure>
+      <img src="img/pipeline-teleop.jpg" width="800" height="281" loading="lazy"
+           alt="Diagram of the leader arm's joint change Δq being passed to the follower arm">
+      <figcaption>1. Joint-offset teleoperation</figcaption>
+    </figure>
+    <figure>
+      <img src="img/pipeline-ema.jpg" width="800" height="212" loading="lazy"
+           alt="Diagram of an oscillating raw action becoming a smooth action after EMA">
+      <figcaption>2. Per-step EMA smoothing</figcaption>
+    </figure>
+    <figure>
+      <img src="img/pipeline-estop.jpg" width="800" height="316" loading="lazy"
+           alt="Diagram of an emergency stop triggered when joint torque exceeds 8 N·m">
+      <figcaption>3. Torque-based E-stop</figcaption>
+    </figure>
+  </div>
+  <ol class="pipe-list">
+    <li><b>Joint-offset teleoperation</b> — we mapped the leader arm's joint changes (Δq) onto the follower as relative values, compensating for unit-to-unit differences between the two arms.</li>
+    <li><b>Per-step EMA smoothing</b> — we damped oscillation in the model's output actions with an exponential moving average (EMA) at every step.</li>
+    <li><b>Torque-based E-stop</b> — when joint torque exceeds 8.0 N·m the robot stops immediately, preventing excessive contact.</li>
+  </ol>
+  <p class="pipe-note">Conceptual illustrations generated with OpenAI GPT Image and reviewed by the authors.</p>
+  <details class="pipe-video"><summary>Video — motion without smoothing</summary><div class="dbody">
+    <figure style="margin:0;text-align:center">
+      <div class="vwrap">
+        <video id="noSmooth" controls playsinline preload="metadata" loop
+               onloadedmetadata="vidReady('noSmooth','noSmoothPh')">
+          <source src="no-smoothing.mp4" type="video/mp4">
+        </video>
+        <div class="vph" id="noSmoothPh" hidden>
+          <b>This video cannot be played</b><span>Your browser does not support mp4</span>
+        </div>
+      </div>
+      <figcaption style="text-align:left">Motion with EMA smoothing turned off.
+        SmolVLA runs synchronously, one action chunk at a time: it executes an entire chunk before predicting the next.</figcaption>
+    </figure>
   </div></details>
 </section>
 <section class="paper-section" id="datasets" aria-labelledby="datasets-title">
-  <div class="section-heading"><h2 id="datasets-title">Datasets</h2><p>Datasets</p></div>
+  <div class="section-heading"><h2 id="datasets-title">Datasets</h2><p>Data collection and training setup</p></div>
   <p>We collected the demonstrations ourselves by teleoperation. The 132-Episode set holds 44 per shape; the 315-Episode set adds 61 more per shape, for 105 each. The difference between the two datasets is not only count but also the <strong>range of positions the shapes were placed in</strong>.</p>
   <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
     <thead><tr><th>Dataset</th><th class="n">Episodes</th><th class="n">Per shape</th>
@@ -171,13 +162,6 @@
     </ul>
   </div></details>
 
-  <details><summary>How the shape-position zones were defined</summary><div class="dbody">
-    <p>We measured the shape position in all 315 source recordings, split them into a top and a bottom row, and applied <b>k-means</b> to the bounding boxes within each row to divide them into left, center, and right. The result is 2 rows × 3 columns = 6 zones, with top and bottom split evenly.</p>
-    <p>Partitioning the 132-Episode set the same way yields 2 rows × 2 columns = 4 zones. The two datasets do not share one partition — <b>the partitions themselves differ.</b>
-      So when comparing 132 and 315 fairly, we aggregate only over the 4 overlapping zones.</p>
-    <p>Evaluation distributed <b>9 trials per zone</b> evenly, for 54 trials per condition. This keeps spatial-placement bias out of the results.</p>
-  </div></details>
-
   <details><summary>Image preprocessing and collection quality criteria</summary><div class="dbody">
     <div class="eq">1280×720 source
   → 720×720 square crop at (280, 0)
@@ -205,8 +189,48 @@
       That is why we also report the aggregate over the 4 shared zones.</div>
   </div></details>
 </section>
+<section class="paper-section" id="method" aria-labelledby="method-title">
+  <div class="section-heading"><h2 id="method-title">Method</h2><p>Evaluation protocol</p></div>
+
+  <p>To keep evaluation objective, an alignment tool placed the eraser and the shape within 5 px before every trial.
+    Every automatically detected ink mask was re-verified by hand, and all numbers on this page are computed from the verified masks.</p>
+
+  <details><summary>Evaluation placement — shape-position zones</summary><div class="dbody">
+    <p>We measured the shape position in all 315 demonstration recordings, split them into a top and a bottom row, and applied
+      <b>k-means</b> to the bounding boxes within each row to divide them into left, center, and right.
+      The result is 2 rows × 3 columns = 6 zones.</p>
+    <p>Evaluation distributed <b>9 trials per zone</b> evenly, for 54 rollouts per condition,
+      to keep spatial-placement bias out of the results.</p>
+    <p>Partitioning the 132-Episode demonstrations the same way yields 2 rows × 2 columns = 4 zones, with the center column empty.
+      So when comparing 132 and 315, we also report the aggregate over the 4 overlapping zones.</p>
+  </div></details>
+
+  <details><summary>Evaluation controls and termination rules</summary><div class="dbody">
+    <p>Real-robot evaluation easily picks up experimenter bias and spatial-placement bias. We followed <b>VLA-Replica</b>, a benchmark protocol for physical VLA evaluation.</p>
+    <ul>
+      <li><b>Visual pre-alignment</b> — project the training-data reference bbox live onto the camera stream and place within 5 px before every trial</li>
+      <li><b>Wilson score 95% CI</b> — with a finite sample, report confidence intervals rather than point estimates</li>
+      <li><b>Failure-mode decomposition</b> — record grasp time, termination time, and termination type independently, so manipulation failures separate from judgment failures</li>
+    </ul>
+    <h4>Termination decided by rule, not by a human</h4>
+    <div class="tw cards" tabindex="0" role="region" aria-label="Data table"><table>
+      <thead><tr><th>Event</th><th>Condition</th><th>Rationale</th></tr></thead>
+      <tr><td class="k">Grasp established</td><td class="n txt" data-label="Condition">Command 8–35 held for 15 frames · width ≤ 3</td>
+        <td data-label="Rationale">The approach ramp passes through the same band. Without the width condition it misfires</td></tr>
+      <tr><td class="k">Release detected</td><td class="n txt" data-label="Condition">+15 or more above grasp · 5 consecutive frames</td>
+        <td data-label="Rationale">Cutting off a physical attempt on a single-step spike cannot be undone</td></tr>
+      <tr><td class="k">Counted as valid</td><td class="n txt" data-label="Condition">Grasp held 120+ frames before release</td>
+        <td data-label="Rationale">Anything shorter is treated as a fumble; wait for a re-grasp</td></tr>
+      <tr><td class="k">Timeout</td><td class="n txt" data-label="Condition">2,100 steps (70 s)</td>
+        <td data-label="Rationale">About 2.9× the 720-frame median demonstration</td></tr>
+    </table></div>
+    <div class="warn"><b>This design is itself a premise of the results.</b>
+      The termination condition treats the policy opening the gripper as the end of the rollout.
+      It does not check whether the ink was actually erased before stopping.</div>
+  </div></details>
+</section>
 <section class="paper-section" id="evaluation" aria-labelledby="evaluation-title">
-  <div class="section-heading"><h2 id="evaluation-title">Evaluation</h2><p>Evaluation methodology</p></div>
+  <div class="section-heading"><h2 id="evaluation-title">Evaluation</h2><p>Evaluation metric</p></div>
   <p>A binary success rate could not tell the results apart. Both of the trials below are counted as failures.</p>
   <div class="demo">
     <div class="row"><span class="lab">A</span>
@@ -268,11 +292,9 @@ Circle      0.63 ≤ Extent ≤ 0.88   (theoretical π/4 ≈ 0.785)</div>
 erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
     <p>Everything is computed inside the shape's bounding box only, so where the eraser is placed and the grasping phase fall outside the measurement.</p>
   </div></details>
-
-
 </section>
 <section class="paper-section" id="results" aria-labelledby="results-title">
-  <div class="section-heading"><h2 id="results-title">Results</h2><p>216 rollouts · 4 conditions × 54</p></div>
+  <div class="section-heading"><h2 id="results-title">Results</h2><p>Base models · 108 rollouts · 2 conditions × 54</p></div>
   <figure style="margin:0 0 18px;text-align:center">
     <div class="vwrap">
       <video id="replay" controls playsinline preload="metadata" loop
@@ -288,10 +310,10 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
       928 frames are recorded, from picking up the eraser to erasing the triangle.</figcaption>
   </figure>
 
-  <p>Each dot is one rollout, and its horizontal position is that rollout's erased fraction.
+  <p>These are the two base-model conditions, 54 rollouts each. Each dot is one rollout, and its horizontal position is that rollout's erased fraction.
     The vertical line marks the median for each condition.</p>
-  <div class="chart" tabindex="0" role="region" aria-label="Erased-fraction distribution by condition">
-    <svg id="strip" viewBox="0 0 400 200" role="img" aria-label="Erased-fraction distribution by condition"></svg>
+  <div class="chart" tabindex="0" role="region" aria-label="Erased-fraction distribution for the two base conditions">
+    <svg id="strip" class="strip" data-rows="132_base,315_base" viewBox="0 0 400 120" role="img" aria-label="Erased-fraction distribution for the two base conditions"></svg>
     <div class="legend">
       <span><i style="background:var(--green)"></i>Success</span>
       <span><i style="background:var(--navy)"></i>Incomplete</span>
@@ -312,35 +334,25 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
   <p>The cause lies in the architecture. SmolVLA has no stop token and no completion head.
     Opening the gripper is just one of seven predicted action dimensions, so no output exists
     that could express task completion.</p>
+  <p>Results for the two models with HAMLET memory added (108 rollouts) are reported separately below, under
+    <a href="#hamlet">Policy Improvement → ① Adding memory</a>.</p>
 
-  <details open><summary>Summary across the four conditions</summary><div class="dbody">
+  <details open><summary>Summary of the two base conditions</summary><div class="dbody">
     <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Condition</th><th class="n">N</th><th class="n">Success</th><th class="n">Erased</th>
         <th class="n">Termination</th><th class="n">Cutoff</th></tr></thead>
       <tr><td class="k">132 base</td><td class="n">54</td><td class="n">0.000</td><td class="n">0.492</td>
         <td class="n">27.5s</td><td class="n wrap">13 (24.1%)</td></tr>
-      <tr><td class="k">132 + HAMLET</td><td class="n">54</td><td class="n">0.000</td>
-        <td class="n dn">0.271</td><td class="n">21.7s</td><td class="n wrap">3 (5.6%)</td></tr>
       <tr><td class="k">315 base</td><td class="n">54</td><td class="n up">0.315</td>
         <td class="n up">0.802</td><td class="n">28.7s</td><td class="n wrap">7 (13.0%)</td></tr>
-      <tr><td class="k">315 + HAMLET</td><td class="n">54</td><td class="n dn">0.074</td>
-        <td class="n dn">0.579</td><td class="n">23.1s</td><td class="n wrap">1 (1.9%)</td></tr>
       <caption>Mean termination time is computed only over trials with <span class="mono">termination=release</span>.
         Medians: 132 base 0.55 · 315 base 0.83.</caption>
     </table></div>
     <h4>Statistical tests</h4>
     <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Comparison</th><th class="n">Fisher p</th><th class="n">M-W p</th><th class="n">Cliff δ</th></tr></thead>
-      <tr><td class="k">Data scale 132→315 (base)</td><td class="n up">2.0e-5</td>
+      <tr><td class="k">Data scale 132→315</td><td class="n up">2.0e-5</td>
         <td class="n up">3.7e-9</td><td class="n">0.658</td></tr>
-      <tr><td class="k">Data scale 132→315 (HAMLET)</td><td class="n">1.2e-1</td>
-        <td class="n up">2.1e-8</td><td class="n">0.626</td></tr>
-      <tr><td class="k">HAMLET applied (315)</td><td class="n dn">1.0e-2</td>
-        <td class="n dn">2.3e-9</td><td class="n">−0.667</td></tr>
-      <tr><td class="k">HAMLET applied (132)</td><td class="n">1.000</td>
-        <td class="n dn">8.3e-5</td><td class="n">−0.439</td></tr>
-      <caption>The last row is the important one. On the binary metric both are identically 0/54,
-        yet the continuous metric separates them clearly at p=8.3e-5. That is the evidence for the new metric's validity.</caption>
     </table></div>
   </div></details>
 
@@ -364,22 +376,15 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
 
   <details><summary>Failure-type breakdown</summary><div class="dbody">
     <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
-      <thead><tr><th>Category</th><th class="n">132</th><th class="n">132+H</th><th class="n">315</th>
-        <th class="n">315+H</th><th class="n">Total</th></tr></thead>
-      <tr><td class="k">Success</td><td class="n">0</td><td class="n">0</td><td class="n">17</td>
-        <td class="n">4</td><td class="n">21</td></tr>
-      <tr><td class="k">Near threshold 0.80–0.90</td><td class="n">7</td><td class="n">2</td>
-        <td class="n">13</td><td class="n">4</td><td class="n">26</td></tr>
-      <tr><td class="k">Substantially erased 0.50–0.80</td><td class="n">18</td><td class="n">11</td>
-        <td class="n">17</td><td class="n">27</td><td class="n">73</td></tr>
-      <tr><td class="k">Partially erased 0.05–0.50</td><td class="n">8</td><td class="n">20</td>
-        <td class="n">0</td><td class="n">18</td><td class="n">46</td></tr>
-      <tr><td class="k">Barely erased &lt;0.05</td><td class="n">8</td><td class="n">18</td>
-        <td class="n">0</td><td class="n">0</td><td class="n">26</td></tr>
-      <tr><td class="k">Timeout</td><td class="n">13</td><td class="n">3</td><td class="n">7</td>
-        <td class="n">1</td><td class="n">24</td></tr>
-      <caption>Of 216 rollouts, 192 ended in release (88.9%) and 24 in cutoff (11.1%).
-        Early termination in the 0.05–0.90 band accounts for 145 cases, 67% of the total.</caption>
+      <thead><tr><th>Category</th><th class="n">132</th><th class="n">315</th><th class="n">Total</th></tr></thead>
+      <tr><td class="k">Success</td><td class="n">0</td><td class="n">17</td><td class="n">17</td></tr>
+      <tr><td class="k">Near threshold 0.80–0.90</td><td class="n">7</td><td class="n">13</td><td class="n">20</td></tr>
+      <tr><td class="k">Substantially erased 0.50–0.80</td><td class="n">18</td><td class="n">17</td><td class="n">35</td></tr>
+      <tr><td class="k">Partially erased 0.05–0.50</td><td class="n">8</td><td class="n">0</td><td class="n">8</td></tr>
+      <tr><td class="k">Barely erased &lt;0.05</td><td class="n">8</td><td class="n">0</td><td class="n">8</td></tr>
+      <tr><td class="k">Timeout</td><td class="n">13</td><td class="n">7</td><td class="n">20</td></tr>
+      <caption>Of 108 rollouts, 88 ended in release (81.5%) and 20 in cutoff (18.5%).
+        Early termination — the gripper opening without success — accounts for 71 cases (66%), 63 of them in the 0.05–0.90 band.</caption>
     </table></div>
     <h4>① There is no architectural means to express it</h4>
     <p>SmolVLA only predicts a 50-action chunk by flow matching, and it has no stop token.
@@ -390,10 +395,11 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
     <h4>③ There is no correlation</h4>
     <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
       <thead><tr><th>Condition</th><th class="n">Termination time ↔ erased fraction</th></tr></thead>
-      <tr><td class="k">132 family</td><td class="n">ρ ≈ 0.45 (p &lt; 0.01)</td></tr>
+      <tr><td class="k">132 family (incl. HAMLET)</td><td class="n">ρ ≈ 0.45 (p &lt; 0.01)</td></tr>
       <tr><td class="k">315 base</td><td class="n dn">0.014</td></tr>
       <tr><td class="k">315 + HAMLET</td><td class="n dn">0.072</td></tr>
-      <caption>The better the manipulation gets — the 315 family — the more time and outcome become unrelated.</caption>
+      <caption>The 132 family pools base and HAMLET rollouts; 315 is computed separately for each condition.
+        The better the manipulation gets — the 315 family — the more time and outcome become unrelated.</caption>
     </table></div>
     <h4>④ More time does not help</h4>
     <ul>
@@ -475,15 +481,67 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
 <section class="paper-section" id="policy" aria-labelledby="policy-title">
   <div class="section-heading"><h2 id="policy-title">Policy Improvement</h2><p>Attempts to improve the policy</p></div>
   <p>We ported prior work along two axes — completion judgment and motion stability — and tested each.
-    Both attempts were evaluated under the same protocol.</p>
+    HAMLET was evaluated over 108 rollouts under the same protocol as the base models; ABPolicy was checked with three qualitative evaluations and measured motion stability.</p>
   <div class="att">
-    <article>
+    <article id="hamlet">
       <h3>① Adding memory <em>HAMLET · ICLR 2026 · 2510.00695</em></h3>
       <p>The arm occludes the shape during parts of the rubbing motion, so we expected that remembering recent
         timesteps would help the completion judgment. We had the policy reference moment tokens — compressed scene representations — as memory.</p>
+      <p>We applied HAMLET to both base models and evaluated each 54 times under the same protocol. Base results are shown alongside for comparison.</p>
+      <div class="chart" tabindex="0" role="region" aria-label="Erased-fraction distribution with and without HAMLET">
+        <svg class="strip" data-rows="132_base,132_hamlet,315_base,315_hamlet" viewBox="0 0 400 200" role="img" aria-label="Erased-fraction distribution with and without HAMLET"></svg>
+        <div class="legend">
+          <span><i style="background:var(--green)"></i>Success</span>
+          <span><i style="background:var(--navy)"></i>Incomplete</span>
+          <span><i style="background:var(--ink)"></i>Median</span>
+        </div>
+      </div>
       <div class="out"><b>Performance dropped.</b> Termination came 5–6 s earlier and timeouts decreased, but
         the erased fraction fell with it. We suspect the memory learned elapsed time rather than remaining ink.
         <div class="num">Erased fraction −0.221 / −0.224 · termination −5.9s / −5.6s</div></div>
+      <details><summary>Four-condition summary and statistical tests</summary><div class="dbody">
+        <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+          <thead><tr><th>Condition</th><th class="n">N</th><th class="n">Success</th><th class="n">Erased</th>
+            <th class="n">Termination</th><th class="n">Cutoff</th></tr></thead>
+          <tr><td class="k">132 base</td><td class="n">54</td><td class="n">0.000</td><td class="n">0.492</td>
+            <td class="n">27.5s</td><td class="n wrap">13 (24.1%)</td></tr>
+          <tr><td class="k">132 + HAMLET</td><td class="n">54</td><td class="n">0.000</td>
+            <td class="n dn">0.271</td><td class="n">21.7s</td><td class="n wrap">3 (5.6%)</td></tr>
+          <tr><td class="k">315 base</td><td class="n">54</td><td class="n">0.315</td>
+            <td class="n">0.802</td><td class="n">28.7s</td><td class="n wrap">7 (13.0%)</td></tr>
+          <tr><td class="k">315 + HAMLET</td><td class="n">54</td><td class="n dn">0.074</td>
+            <td class="n dn">0.579</td><td class="n">23.1s</td><td class="n wrap">1 (1.9%)</td></tr>
+          <caption>Mean termination time is computed only over trials with <span class="mono">termination=release</span>.</caption>
+        </table></div>
+        <h4>Statistical tests</h4>
+        <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+          <thead><tr><th>Comparison</th><th class="n">Fisher p</th><th class="n">M-W p</th><th class="n">Cliff δ</th></tr></thead>
+          <tr><td class="k">Data scale 132→315 (HAMLET)</td><td class="n">1.2e-1</td>
+            <td class="n up">2.1e-8</td><td class="n">0.626</td></tr>
+          <tr><td class="k">HAMLET applied (315)</td><td class="n dn">1.0e-2</td>
+            <td class="n dn">2.3e-9</td><td class="n">−0.667</td></tr>
+          <tr><td class="k">HAMLET applied (132)</td><td class="n">1.000</td>
+            <td class="n dn">8.3e-5</td><td class="n">−0.439</td></tr>
+          <caption>The last row is the important one. On the binary metric both are identically 0/54,
+            yet the continuous metric separates them clearly at p=8.3e-5. That is the evidence for the new metric's validity.</caption>
+        </table></div>
+      </div></details>
+      <details><summary>Failure-type breakdown and termination-time correlation</summary><div class="dbody">
+        <div class="tw" tabindex="0" role="region" aria-label="Data table"><table>
+          <thead><tr><th>Category</th><th class="n">132+H</th><th class="n">315+H</th><th class="n">Total</th></tr></thead>
+          <tr><td class="k">Success</td><td class="n">0</td><td class="n">4</td><td class="n">4</td></tr>
+          <tr><td class="k">Near threshold 0.80–0.90</td><td class="n">2</td><td class="n">4</td><td class="n">6</td></tr>
+          <tr><td class="k">Substantially erased 0.50–0.80</td><td class="n">11</td><td class="n">27</td><td class="n">38</td></tr>
+          <tr><td class="k">Partially erased 0.05–0.50</td><td class="n">20</td><td class="n">18</td><td class="n">38</td></tr>
+          <tr><td class="k">Barely erased &lt;0.05</td><td class="n">18</td><td class="n">0</td><td class="n">18</td></tr>
+          <tr><td class="k">Timeout</td><td class="n">3</td><td class="n">1</td><td class="n">4</td></tr>
+          <caption>Of 108 rollouts, 104 ended in release (96.3%) and 4 in cutoff (3.7%).
+            Timeouts dropped compared with the base models (20 cutoffs), but rollouts that erased less than half grew from 16 to 56.</caption>
+        </table></div>
+        <h4>Correlation between termination time and erased fraction</h4>
+        <p>For 315 + HAMLET the coefficient is <span class="mono">0.072</span>; as with the base model (<span class="mono">0.014</span>),
+          when the policy stops is unrelated to how much it has erased. Adding memory did not give the policy grounds for judging completion.</p>
+      </div></details>
       <details><summary>Why it behaved differently on SmolVLA</summary><div class="dbody">
         <p>HAMLET compresses the perception at each timestep into a <b>moment token</b>, keeps the most recent T=4 in memory,
           and lets action prediction reference them. The original paper reports results from attaching this to GR00T N1.5.</p>
@@ -492,16 +550,15 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
           Memory built this way passes through all N layers, has only its slot swapped at that point, and goes straight
           to the action head. Zero additional computation.</p>
         <h4>On SmolVLA</h4>
-        <p>SmolVLA runs the vision-language layers and the action layers <b>alternately, layer by layer</b>, exchanging K/V.
-          There is no point where the VLM finishes and hands one completed representation to the action head.
-          Inserted memory attaches at the very front and passes through every layer again, mixing continuously with vision-language information.</p>
+        <p>SmolVLA's action expert does not receive a single final VLM output; its cross-attention layers attend to
+          <b>the VLM's keys and values (K/V) from the layers up to an intermediate depth (N = L/2)</b>.
+          Because there is no point where the VLM finishes and hands one completed representation to the action head,
+          inserted memory attaches to the front of the VLM input and passes through those layers, mixing continuously with vision-language information.</p>
         <div class="warn"><b>A problem with the training signal.</b>
           HAMLET trains in two stages, and the only signal that could relate to progress — temporal contrastive learning —
           is used solely to initialize the moment tokens in stage 1. Stage 2, which actually determines behavior,
           uses pure action-prediction loss. Even if the memory can hold the information, no signal trains it to
           connect that information to the behavior <b>"do not stop yet."</b></div>
-        <p>During the port we found and fixed an implementation bug that updated moment tokens only at inference time,
-          and we also retuned the update interval. We cannot rule out that residual porting error is mixed into the final result.</p>
       </div></details>
     </article>
     <article>
@@ -537,14 +594,65 @@ erased_target = clip( (ink_before − ink_after) / ink_before , 0, 1 )</div>
   <div class="att">
     <article>
       <h3>① Synthetic data augmentation <em>Synthetic Data Generation</em></h3>
-      <p>We composited a distractor shape onto static background pixels, opposite the target shape, to build two-shape data.
-        This reuses existing top-camera footage instead of recording anew.</p>
+      <p>Across all top-camera footage in the 315-Episode dataset, we composited a distractor shape onto static background pixels
+        opposite the target to build two-shape data. Because existing footage was reused rather than recorded anew, the episode and frame counts match the original.</p>
+      <p>In the discrimination test, each of the three target shapes was placed 20 times on the left and 20 times on the right, 120 trials in total, to check whether the policy approached the instructed shape.</p>
+      <div class="acc" style="--acc-name: 88px" role="group" aria-label="Discrimination accuracy by target side">
+        <div class="acc-legend"><span><i class="acc-l"></i>Target on left</span><span><i class="acc-r"></i>Target on right</span></div>
+        <div class="acc-grp"><div class="acc-name">Circle</div>
+          <div class="acc-row" title="Circle · target on left, 14/20 correct"><span class="acc-side">Left</span>
+            <span class="acc-track"><i class="acc-l" style="width:70%"></i></span><span class="acc-val">70%<small>14/20</small></span></div>
+          <div class="acc-row" title="Circle · target on right, 20/20 correct"><span class="acc-side">Right</span>
+            <span class="acc-track"><i class="acc-r" style="width:100%"></i></span><span class="acc-val">100%<small>20/20</small></span></div>
+        </div>
+        <div class="acc-grp"><div class="acc-name">Triangle</div>
+          <div class="acc-row" title="Triangle · target on left, 4/20 correct"><span class="acc-side">Left</span>
+            <span class="acc-track"><i class="acc-l" style="width:20%"></i></span><span class="acc-val">20%<small>4/20</small></span></div>
+          <div class="acc-row" title="Triangle · target on right, 17/20 correct"><span class="acc-side">Right</span>
+            <span class="acc-track"><i class="acc-r" style="width:85%"></i></span><span class="acc-val">85%<small>17/20</small></span></div>
+        </div>
+        <div class="acc-grp"><div class="acc-name">Rectangle</div>
+          <div class="acc-row" title="Rectangle · target on left, 0/20 correct"><span class="acc-side">Left</span>
+            <span class="acc-track"><i class="acc-l" style="width:0%"></i></span><span class="acc-val">0%<small>0/20</small></span></div>
+          <div class="acc-row" title="Rectangle · target on right, 17/20 correct"><span class="acc-side">Right</span>
+            <span class="acc-track"><i class="acc-r" style="width:85%"></i></span><span class="acc-val">85%<small>17/20</small></span></div>
+        </div>
+        <div class="acc-grp acc-sum"><div class="acc-name">All</div>
+          <div class="acc-row" title="All · target on left, 18/60 correct"><span class="acc-side">Left</span>
+            <span class="acc-track"><i class="acc-l" style="width:30%"></i></span><span class="acc-val">30%<small>18/60</small></span></div>
+          <div class="acc-row" title="All · target on right, 54/60 correct"><span class="acc-side">Right</span>
+            <span class="acc-track"><i class="acc-r" style="width:90%"></i></span><span class="acc-val">90%<small>54/60</small></span></div>
+        </div>
+      </div>
       <div class="out"><b>Recognition improved, but a strong right-side bias appeared.</b>
-        Accuracy diverged sharply between targets on the right and targets on the left.
-        <div class="num">8 epochs · 276 episodes · 147,159 frames</div></div>
+        With the target on the right, accuracy was 90% (54/60); with the target on the left, only 30% (18/60).
+        The training data is nearly balanced, 159:156 between left and right targets, so this bias is not explained by a left–right imbalance in the training data.
+        <div class="num">8 epochs · 315 episodes · 167,589 frames · 120 discrimination trials</div></div>
+      <details><summary>Training data and discrimination results by combination</summary><div class="dbody">
+        <div class="tw" tabindex="0" role="region" aria-label="Data table"><table class="combo">
+          <thead><tr><th>Target</th><th>Side</th><th>Distractor</th><th class="n">Episodes</th><th class="n">Wrong</th></tr></thead>
+          <tr><td class="k">Circle</td><td>Left</td><td>Rectangle</td><td class="n">27</td><td class="n">4/10</td></tr>
+          <tr><td class="k">Circle</td><td>Left</td><td>Triangle</td><td class="n">26</td><td class="n">2/10</td></tr>
+          <tr><td class="k">Circle</td><td>Right</td><td>Rectangle</td><td class="n">26</td><td class="n">0/10</td></tr>
+          <tr><td class="k">Circle</td><td>Right</td><td>Triangle</td><td class="n">26</td><td class="n">0/10</td></tr>
+          <tr><td class="k">Triangle</td><td>Left</td><td>Circle</td><td class="n">31</td><td class="n dn">10/10</td></tr>
+          <tr><td class="k">Triangle</td><td>Left</td><td>Rectangle</td><td class="n">22</td><td class="n dn">6/10</td></tr>
+          <tr><td class="k">Triangle</td><td>Right</td><td>Circle</td><td class="n">25</td><td class="n">1/10</td></tr>
+          <tr><td class="k">Triangle</td><td>Right</td><td>Rectangle</td><td class="n">27</td><td class="n">2/10</td></tr>
+          <tr><td class="k">Rectangle</td><td>Left</td><td>Circle</td><td class="n">25</td><td class="n dn">10/10</td></tr>
+          <tr><td class="k">Rectangle</td><td>Left</td><td>Triangle</td><td class="n">28</td><td class="n dn">10/10</td></tr>
+          <tr><td class="k">Rectangle</td><td>Right</td><td>Circle</td><td class="n">30</td><td class="n">3/10</td></tr>
+          <tr><td class="k">Rectangle</td><td>Right</td><td>Triangle</td><td class="n">22</td><td class="n">0/10</td></tr>
+          <caption>Side is the target's side, from the robot's perspective, and Episodes counts training episodes. The synthetic shape is always placed opposite the target, so these 12 combinations are exhaustive;
+            there are 105 training episodes per shape, 315 in total (159 with the target on the left · 156 on the right). Each combination was tested 10 times.
+            Errors were unrelated to how many training episodes a combination had: the most-trained combination (triangle on the left · circle distractor, 31 episodes)
+            was wrong all 10 times, while one of the least-trained (rectangle on the right · triangle distractor, 22 episodes) was never wrong.
+            Errors split by target side instead — 42 with the target on the left versus 6 with it on the right.</caption>
+        </table></div>
+      </div></details>
     </article>
     <article>
-      <h3>② Human-gated correction <em>HG-DAgger · 1810.02890</em></h3>
+      <h3>② Human-gated correction <em>HG-DAgger · ICRA 2019 · 1810.02890</em></h3>
       <p>Whenever the policy approached the wrong shape, a person intervened with the leader arm to collect correction data,
         which was then merged with the existing demonstrations for retraining.</p>
       <div class="out"><b>The technique worked; the data was the limitation.</b>

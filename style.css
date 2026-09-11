@@ -324,3 +324,56 @@ footer b { font-weight: 500; }
 @media (min-width: 700px) and (max-width: 1024px) {
   .shots { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
 }
+
+/* ---------- 파이프라인 ----------
+   포스터처럼 삽화 세 장을 한 줄에 두고, 설명은 아래 번호 목록으로 뺀다.
+   열 너비를 그림마다의 가로세로비(--pipe-cols)에 맞춰 세 그림의 높이를 같게 한다 */
+.pipe-row { display: grid; grid-template-columns: var(--pipe-cols, repeat(3, minmax(0, 1fr))); gap: 16px;
+  align-items: start; max-width: 960px; margin: 24px auto 0; }
+.pipe-row figure { margin: 0; }
+.pipe-row img { width: 100%; border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.pipe-row figcaption { margin-top: 8px; font-size: .88rem; color: var(--ink2); font-weight: 500; line-height: 1.5; }
+.pipe-list { max-width: 960px; margin: 22px auto 0; padding-left: 24px; color: var(--ink2); font-size: 1.05rem; line-height: 1.85; }
+.pipe-list li { padding-left: 4px; margin-bottom: 6px; }
+.pipe-list li:last-child { margin-bottom: 0; }
+.paper-section > p.pipe-note { max-width: 960px; margin: 10px auto 0; font-size: .85rem; line-height: 1.6; color: var(--ink3); text-align: right; }
+.paper-section > details.pipe-video { max-width: 960px; margin: 20px auto 0; }
+/* ---------- 판별 정답률 막대 ----------
+   막대마다 좌우 글자와 값을 붙여 색만으로 읽지 않게 한다.
+   막대는 0에서 자라고 끝만 4px 둥글린다. 페이지 폭이 바뀌어도 글자 크기는 본문을 따른다 */
+.acc { background: #fff; border: 1px solid var(--line); border-radius: 9px; padding: 14px 22px 8px; margin: 18px 0; }
+.acc-legend { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 4px 18px; font-size: .84rem; color: var(--ink3); }
+.acc-legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+/* 이름 칸 폭은 --acc-name 으로 받는다. 영문 페이지는 "Rectangle" 이 들어가도록 넓혀 쓴다 */
+.acc-grp { display: grid; grid-template-columns: var(--acc-name, 64px) minmax(0, 1fr); column-gap: 14px; padding: 10px 0; border-top: 1px solid var(--line); }
+.acc-legend + .acc-grp { border-top: 0; }
+.acc-name { grid-row: span 2; align-self: center; font-weight: 600; color: var(--ink); }
+.acc-sum .acc-name { color: var(--ink2); }
+.acc-row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 104px; align-items: center; column-gap: 12px; line-height: 1.9; }
+.acc-side { font-size: .84rem; color: var(--ink3); }
+.acc-track { display: block; height: 12px; background: var(--sunk); border-radius: 0 4px 4px 0; }
+.acc-track i { display: block; height: 100%; border-radius: 0 4px 4px 0; }
+.acc-l { background: #7ea8e8; }
+.acc-r { background: var(--navy); }
+.acc-val { font-family: var(--mono); font-size: .86rem; color: var(--ink); text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.acc-val small { margin-left: 6px; font-size: .78rem; color: var(--ink3); }
+/* 조합 표는 칸마다 짧은 낱말이라, 폰에서 "사각/형"처럼 갈라지지 않게 줄바꿈을 막는다 */
+@media (max-width: 640px) {
+  .combo td { white-space: nowrap; overflow-wrap: normal; word-break: keep-all; }
+}
+@media (max-width: 480px) {
+  /* 영문 조합 표는 "Rectangle" 같은 긴 낱말이 겹쳐 폭이 모자라다. 칸 여백과 숫자 머리글 글꼴로 폭을 되찾는다 */
+  .combo th, .combo td { padding-left: 3px; padding-right: 3px; }
+  .combo th.n { font-family: var(--sans); }
+  .acc { padding: 12px 12px 6px; }
+  .acc-grp { grid-template-columns: minmax(0, 1fr); }
+  .acc-name { grid-row: auto; margin-bottom: 2px; }
+  .acc-row { grid-template-columns: 40px minmax(0, 1fr) 92px; column-gap: 8px; }
+}
+
+/* 폰 폭에서 세 장을 한 줄에 두면 그림 속 글자가 읽히지 않아 세로로 쌓는다 */
+@media (max-width: 640px) {
+  .pipe-row { grid-template-columns: 1fr; max-width: 360px; gap: 14px; }
+  .pipe-list { font-size: 1rem; padding-left: 20px; }
+  .paper-section > p.pipe-note { text-align: left; }
+}
