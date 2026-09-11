@@ -82,3 +82,29 @@ const D = {"132_base":{"er":[0.815,0.694,0.754,0.404,0.396,0.649,0.273,0.583,0.6
   });
 })();
 setZone("circle");
+
+/* 오늘 방문 수. 2026-09-11 14:30 KST 부터 센다.
+   그 전에는 이미지를 아예 요청하지 않으므로 hits.sh 의 카운트가 0 인 채로 남는다
+   (hits.sh 에는 초기화 기능이 없어서 이렇게 한다) */
+(function hits(){
+  const foot = document.querySelector("footer");
+  if (!foot || document.querySelector(".hits")) return;
+  const START = 1789104600000;
+  const SRC = "https://hits.sh/ugrp43.github.io/poster-session.svg"
+            + "?style=flat-square&label=Today&color=3b6fb3&labelColor=eef2f7&view=today";
+  const box = document.createElement("div");
+  box.className = "hits";
+  box.hidden = true;
+  foot.appendChild(box);
+  const show = () => {
+    const img = new Image();
+    img.alt = EN ? "Visits today" : "오늘 방문 수";
+    img.referrerPolicy = "no-referrer-when-downgrade";
+    img.src = SRC;
+    box.appendChild(img);
+    box.hidden = false;
+  };
+  const wait = START - Date.now();
+  if (wait <= 0) show();
+  else if (wait < 6 * 3600 * 1000) setTimeout(show, wait);  /* 미리 열어 둔 탭도 시각이 되면 표시된다 */
+})();
