@@ -377,3 +377,7 @@ footer b { font-weight: 500; }
   .pipe-list { font-size: 1rem; padding-left: 20px; }
   .paper-section > p.pipe-note { text-align: left; }
 }
+
+/* ---------- 방문 수 ---------- */
+.hits { margin-top: 16px; }
+.hits img { display: inline-block; height: 20px; width: auto; border: 0; border-radius: 3px; opacity: .85; }
