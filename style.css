@@ -402,17 +402,19 @@ body { padding-top: 46px; }
   overflow: hidden; text-overflow: ellipsis;
   box-shadow: 0 3px 12px #18283a2e;
   opacity: 0;
-  animation: votepeek 5s cubic-bezier(.18,.78,.28,1) infinite;
+  --s: 1;
+  transform: scale(var(--s));
 }
+/* 한 번 뜰 때는 크기가 고정이고, 뜰 때마다 --s 가 커진다 (script.js) */
+.votebar span.peek { animation: votepeek 1.2s ease-in-out; }
 @keyframes votepeek {
-  0%   { opacity: 0; transform: scale(.18); }
-  4%   { opacity: 1; }
-  18%  { opacity: 1; transform: scale(1); }
-  24%  { opacity: 0; transform: scale(1); }
-  100% { opacity: 0; transform: scale(.18); }
+  0%   { opacity: 0; }
+  14%  { opacity: 1; }
+  80%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .votebar span { animation: none; opacity: 1; }
+  .votebar span { animation: none !important; opacity: 1; --s: 1; }
 }
 @media (max-width: 480px) {
   .votebar span { font-size: .85rem; padding: 6px 14px; }

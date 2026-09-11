@@ -119,7 +119,8 @@ setZone("circle");
   else if (wait < 6 * 3600 * 1000) setTimeout(show, wait);  /* 미리 열어 둔 탭도 시각이 되면 표시된다 */
 })();
 
-/* 인기투표 안내. 최상단에서 5초마다 1초씩 잠깐 나타난다.
+/* 인기투표 안내. 최상단에서 5초마다 약 1초씩 잠깐 나타나고,
+   뜰 때마다 커져서 세 번째에 제 크기가 된다.
    자리는 항상 비워 두므로(body 위 여백) 글이 떴다 사라져도 본문이 밀리지 않는다 */
 (function voteBar(){
   const main = document.querySelector("main.page");
@@ -133,4 +134,17 @@ setZone("circle");
     : "보시고 재밌으셨으면, 인기투표 부탁드립니다.";
   bar.appendChild(msg);
   document.body.insertBefore(bar, document.body.firstChild);
+
+  /* 뜰 때마다 조금씩 커져서 세 번째에 제 크기가 된다. 그 뒤로는 제 크기로 계속 뜬다 */
+  const STEPS = [0.40, 0.70, 1];
+  let n = 0;
+  const blink = () => {
+    msg.style.setProperty("--s", STEPS[Math.min(n, STEPS.length - 1)]);
+    n++;
+    msg.classList.remove("peek");
+    void msg.offsetWidth;          /* 리플로우를 일으켜 애니메이션을 다시 시작시킨다 */
+    msg.classList.add("peek");
+  };
+  blink();
+  setInterval(blink, 5000);        /* 약 1.2 초 보이고 3.8 초 쉰다 */
 })();
