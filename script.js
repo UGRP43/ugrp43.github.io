@@ -50,7 +50,8 @@ const D = {"132_base":{"er":[0.815,0.694,0.754,0.404,0.396,0.649,0.273,0.583,0.6
 /* 분포 그래프. svg 의 data-rows 로 그릴 조건을 고른다.
    지정이 없으면 네 조건을 모두 그린다(영문 페이지). 줄 높이는 고정이고 줄 수에 맞춰 viewBox 높이를 정한다 */
 (function strip(){
-  const W=400,L=62,R=12,T=14,B=26,RH=40;
+  const W=400,L=62,R=12,T=14,B=26,RH=50;
+  const DOT=2.4, COLW=DOT*2*0.80, VS=DOT*2*0.85;   /* 벌집 배치: 열 폭과 세로 간격 */
   const base = EN ? "base" : "순정";
   const LABEL={"132_base":"132 "+base,"132_hamlet":"132 +H","315_base":"315 "+base,"315_hamlet":"315 +H"};
   document.querySelectorAll("svg#strip, svg.strip").forEach(svg=>{
@@ -70,12 +71,21 @@ const D = {"132_base":{"er":[0.815,0.694,0.754,0.404,0.396,0.649,0.273,0.583,0.6
       const cy=T+rh*ri+rh/2, d=D[k];
       s+=`<text x="${L-8}" y="${cy+3.5}" font-size="10.5" text-anchor="end"
             fill="var(--ink2)" font-family="IBM Plex Mono,monospace">${LABEL[k]}</text>`;
-      d.er.forEach((v,i)=>{
-        const j=((i*37)%11-5)*(rh*0.055);
-        s+=`<circle cx="${x(v).toFixed(1)}" cy="${(cy+j).toFixed(1)}" r="2.6"
-              fill="var(--navy)" opacity=".45"/>`;
-      });
-      s+=`<line x1="${x(d.med)}" y1="${cy-rh*0.34}" x2="${x(d.med)}" y2="${cy+rh*0.34}"
+      /* 같은 구간에 겹치는 점을 가운데부터 위·아래로 번갈아 쌓는다 */
+      const cols=new Map();
+      for(const v of [...d.er].sort((a,b)=>a-b)){
+        const b=Math.round(x(v)/COLW);
+        if(!cols.has(b)) cols.set(b,[]);
+        cols.get(b).push(v);
+      }
+      for(const arr of cols.values()){
+        arr.forEach((v,n)=>{
+          const dy=Math.ceil(n/2)*(n%2?1:-1)*VS;
+          s+=`<circle cx="${x(v).toFixed(1)}" cy="${(cy+dy).toFixed(1)}" r="${DOT}"
+                fill="var(--navy)" opacity=".55"/>`;
+        });
+      }
+      s+=`<line x1="${x(d.med)}" y1="${cy-rh*0.40}" x2="${x(d.med)}" y2="${cy+rh*0.40}"
             stroke="var(--ink)" stroke-width="2"/>`;
     });
     svg.innerHTML=s;
