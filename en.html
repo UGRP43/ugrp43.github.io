@@ -27,7 +27,7 @@
     <a href="#results"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="M4 3v17h17 M8 16v-5 M13 16V6 M18 16v-8"/></svg>Results</a>
   </nav>
 </header>
-<div class="tldr"><p><span class="tldr-label">TL;DR</span>We evaluated a shape-erasing task on a real robot across <strong>216 rollouts</strong>. Scaling the demonstration data raised the erased fraction from <strong>0.49 to 0.80</strong>, but judging task completion and controlling contact both still need work.</p></div>
+<div class="tldr"><p><span class="tldr-label">TL;DR</span>We evaluated VLA-based shape erasing on a real robot. Scaling demonstrations from 132 to 315 raised the erased fraction from <strong>0.49 to 0.80</strong>. But the robot repeatedly stopped before sufficiently erasing the shape, identifying <strong>completion judgment</strong> as the central challenge.</p></div>
 <figure class="teaser">
     <img src="robot-setup.jpg" alt="A PiPER robot arm erasing a shape from a whiteboard" fetchpriority="high">
     <figcaption>Agilex PiPER, 6-DoF. Every stage was run on real hardware, not in simulation.</figcaption>
